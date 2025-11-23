@@ -4,6 +4,9 @@
 OPENSCAD := /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD
 # OPENSCAD := openscad
 
+# OpenSCAD flags (Manifold is default in 2024+)
+OPENSCAD_FLAGS :=
+
 # Directories
 SCAD_DIR := scad
 COMPONENTS_DIR := $(SCAD_DIR)/components
@@ -68,36 +71,36 @@ $(STL_DIR)/plastic-cf:
 # =============================================================================
 # Single metal components
 $(STL_DIR)/metal/%.stl: $(COMPONENTS_DIR)/metal/%.scad $(CONFIG) | $(STL_DIR)/metal
-	$(OPENSCAD) -o $@ $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
 
 # Tube sleeves (straight tubes only)
 $(STL_DIR)/metal/sleeve_seat_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
-	$(OPENSCAD) -o $@ -D 'render_type="seat_tube"' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="seat_tube"' $<
 
 $(STL_DIR)/metal/sleeve_chainstay.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
-	$(OPENSCAD) -o $@ -D 'render_type="chainstay"' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="chainstay"' $<
 
 $(STL_DIR)/metal/sleeve_seat_stay.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
-	$(OPENSCAD) -o $@ -D 'render_type="seat_stay"' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="seat_stay"' $<
 
 # =============================================================================
 # Plastic-CF component rules (sectioned)
 # =============================================================================
 # Down tube sections
 $(STL_DIR)/plastic-cf/down_tube_%.stl: $(COMPONENTS_DIR)/plastic-cf/down_tube.scad $(CONFIG) | $(STL_DIR)/plastic-cf
-	$(OPENSCAD) -o $@ -D 'render_section=$*' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # Seat tube sections
 $(STL_DIR)/plastic-cf/seat_tube_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_tube.scad $(CONFIG) | $(STL_DIR)/plastic-cf
-	$(OPENSCAD) -o $@ -D 'render_section=$*' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # Chainstay sections
 $(STL_DIR)/plastic-cf/chainstay_%.stl: $(COMPONENTS_DIR)/plastic-cf/chainstay.scad $(CONFIG) | $(STL_DIR)/plastic-cf
-	$(OPENSCAD) -o $@ -D 'render_section=$*' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # Seat stay sections
 $(STL_DIR)/plastic-cf/seat_stay_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_stay.scad $(CONFIG) | $(STL_DIR)/plastic-cf
-	$(OPENSCAD) -o $@ -D 'render_section=$*' $<
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # =============================================================================
 # Utility targets

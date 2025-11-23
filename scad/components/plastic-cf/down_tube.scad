@@ -12,31 +12,41 @@ section_angle = arc_angle / down_tube_sections;
 overlap_angle = (lap_overlap / down_tube_curve_radius) * (180 / PI);
 
 module down_tube_section(section_num) {
-    difference() {
-        union() {
-            // Main tube section
-            rotate_extrude(angle = section_angle, $fn = 128)
-                translate([down_tube_curve_radius, 0, 0])
-                    difference() {
-                        circle(d = down_tube_od);
-                        circle(d = down_tube_od - 2 * tube_wall_thickness);
-                    }
+    // Total angle for this section (including overlap if not last)
+    total_angle = (section_num < down_tube_sections - 1)
+                  ? section_angle + overlap_angle
+                  : section_angle;
 
-            // Expanded collar at exit end for lap joint (if not last section)
-            if (section_num < down_tube_sections - 1) {
-                rotate([0, 0, section_angle])
-                    rotate_extrude(angle = overlap_angle, $fn = 128)
-                        translate([down_tube_curve_radius, 0, 0])
-                            difference() {
-                                circle(d = down_tube_od + 6);  // Expanded OD for overlap
-                                circle(d = down_tube_od);      // Fits over next section
-                            }
-            }
+    difference() {
+        // Outer shell - one continuous extrusion
+        rotate_extrude(angle = total_angle, $fn = 128)
+            translate([down_tube_curve_radius, 0, 0])
+                circle(d = down_tube_od + 6);  // Max OD (collar size)
+
+        // Remove inner material to create tube with collar
+        // Main tube inner bore
+        rotate_extrude(angle = section_angle, $fn = 128)
+            translate([down_tube_curve_radius, 0, 0])
+                circle(d = down_tube_od - 2 * tube_wall_thickness);
+
+        // Trim outer to standard OD for main section
+        rotate_extrude(angle = section_angle, $fn = 128)
+            translate([down_tube_curve_radius, 0, 0])
+                difference() {
+                    circle(d = down_tube_od + 10);  // Larger than max
+                    circle(d = down_tube_od);       // Standard OD
+                }
+
+        // Collar inner bore (fits over next section)
+        if (section_num < down_tube_sections - 1) {
+            rotate([0, 0, section_angle - 0.01])  // Slight overlap to avoid gap
+                rotate_extrude(angle = overlap_angle + 0.02, $fn = 128)
+                    translate([down_tube_curve_radius, 0, 0])
+                        circle(d = down_tube_od + 0.5);  // Clearance for fit
         }
 
         // Bolt holes for flange clamps at entry end (if not first section)
         if (section_num > 0) {
-            // 4 bolt holes arranged in 2 pairs
             for (z_angle = [0.5, 1.5]) {
                 for (radial_angle = [30, -30]) {
                     rotate([0, 0, z_angle])

@@ -17,36 +17,33 @@ module chainstay_section(section_num) {
     start_od = chainstay_od + 4 * (1 - start_ratio);
     end_od = chainstay_od + 4 * (1 - end_ratio);
 
+    start_id = start_od - 2*chainstay_wall;
+    end_id = end_od - 2*chainstay_wall;
+
     difference() {
-        // Outer tube - tapered
-        hull() {
-            cylinder(h = 1, d = start_od);
-            translate([0, 0, chainstay_section_length - 1])
-                cylinder(h = 1, d = end_od);
-        }
+        // Outer tube - tapered using cylinder with d1/d2
+        cylinder(h = chainstay_section_length, d1 = start_od, d2 = end_od);
 
-        // Inner bore - tapered
-        hull() {
-            translate([0, 0, -epsilon])
-                cylinder(h = 1, d = start_od - 2*chainstay_wall);
-            translate([0, 0, chainstay_section_length - 1])
-                cylinder(h = 1 + epsilon, d = end_od - 2*chainstay_wall);
-        }
+        // Inner bore - tapered, extends beyond ends
+        translate([0, 0, -epsilon])
+            cylinder(h = chainstay_section_length + 2*epsilon, d1 = start_id, d2 = end_id);
 
-        // Bolt holes for sleeve joint
+        // Bolt holes for sleeve joint - properly spaced around tube
         if (section_num > 0) {
             for (i = [0:joint_bolt_count-1]) {
-                translate([0, 0, joint_overlap/2 + i * 10])
-                    rotate([90, 0, 0])
-                        cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
+                rotate([0, 0, i * 180])  // Opposite sides
+                    translate([0, 0, joint_overlap/2 + (i % 2) * 8])
+                        rotate([90, 0, 0])
+                            cylinder(h = start_od, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
 
         if (section_num < chainstay_sections - 1) {
             for (i = [0:joint_bolt_count-1]) {
-                translate([0, 0, chainstay_section_length - joint_overlap/2 - i * 10])
-                    rotate([90, 0, 0])
-                        cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
+                rotate([0, 0, i * 180])  // Opposite sides
+                    translate([0, 0, chainstay_section_length - joint_overlap/2 - (i % 2) * 8])
+                        rotate([90, 0, 0])
+                            cylinder(h = end_od, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
     }
