@@ -136,14 +136,21 @@ Dimensions per dropout:
 - **Length**: 60mm each
 - **Wall thickness**: 2mm
 - **Bolt holes**: 2× M6 per sleeve
-- **Quantity**: 7 total (2 for down tube, 1 for seat tube, 2 for chainstays, 2 for seat stays)
+- **Quantity**: 5 total (1 for seat tube, 2 for chainstays, 2 for seat stays)
+
+### Down Tube Flange Plates
+
+- **Material**: 6061-T6 aluminum
+- **Dimensions**: 60mm × 40mm × 6mm
+- **Bolt holes**: 4× M6 per plate
+- **Quantity**: 8 plates (2 per joint × 2 joints × 2 sides)
+- **Purpose**: Clamp lap-jointed curved down tube sections
 
 ---
 
 ## Composite Frame Tubes (FibreSeeker 3)
 
 All tubes printed in sections to fit 300×300×245mm build volume.
-Sections joined with internal aluminum sleeves and M6 through-bolts.
 
 ### Down Tube
 
@@ -151,6 +158,12 @@ Sections joined with internal aluminum sleeves and M6 through-bolts.
 - **Sections**: 3 × ~217mm
 - **OD**: 44mm
 - **Wall**: 3mm
+- **Joint type**: Lap joint with external flange clamps (for curved geometry)
+- **Overlap**: 25mm per joint
+
+### Straight Tubes
+
+Seat tube, chainstays, and seat stays use internal aluminum sleeves with M6 through-bolts.
 
 ### Seat Tube
 

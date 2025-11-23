@@ -160,9 +160,17 @@ seat_tube_sections = 2;
 chainstay_sections = 2;
 seat_stay_sections = 2;
 
-// Sleeve parameters (CNC milled aluminum)
+// Sleeve parameters (CNC milled aluminum) - for straight tubes
 sleeve_wall_thickness = 2;
 sleeve_length = 60;                  // Total sleeve length (2x overlap)
+
+// Flange joint parameters (for curved down tube)
+flange_thickness = 6;
+flange_width = 60;                   // Width of flange plate
+flange_height = 40;                  // Height of flange plate
+flange_bolt_count = 4;               // Bolts per flange pair
+flange_bolt_diameter = 6;            // M6 bolts
+lap_overlap = 25;                    // Tube overlap at joint
 
 // =============================================================================
 // MANUFACTURING TOLERANCES

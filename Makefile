@@ -14,13 +14,13 @@ CONFIG := $(SCAD_DIR)/config.scad
 # Metal Components (single parts)
 # =============================================================================
 METAL_SINGLE := dropout bb_shell head_tube seat_collar motor_mount \
-                battery_mount brake_mount cable_guide gusset_plate rack_mount
+                battery_mount brake_mount cable_guide gusset_plate rack_mount \
+                down_tube_flange
 
 METAL_SINGLE_STL := $(patsubst %,$(STL_DIR)/metal/%.stl,$(METAL_SINGLE))
 
-# Tube sleeves (different sizes)
-SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
-              $(STL_DIR)/metal/sleeve_seat_tube.stl \
+# Tube sleeves (for straight tubes only - down tube uses flanges)
+SLEEVE_STL := $(STL_DIR)/metal/sleeve_seat_tube.stl \
               $(STL_DIR)/metal/sleeve_chainstay.stl \
               $(STL_DIR)/metal/sleeve_seat_stay.stl
 
@@ -70,10 +70,7 @@ $(STL_DIR)/plastic-cf:
 $(STL_DIR)/metal/%.stl: $(COMPONENTS_DIR)/metal/%.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) -o $@ $<
 
-# Tube sleeves
-$(STL_DIR)/metal/sleeve_down_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
-	$(OPENSCAD) -o $@ -D 'render_type="down_tube"' $<
-
+# Tube sleeves (straight tubes only)
 $(STL_DIR)/metal/sleeve_seat_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) -o $@ -D 'render_type="seat_tube"' $<
 
