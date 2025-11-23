@@ -18,12 +18,14 @@ CONFIG := $(SCAD_DIR)/config.scad
 # =============================================================================
 METAL_SINGLE := dropout bb_shell head_tube seat_collar motor_mount \
                 battery_mount brake_mount cable_guide gusset_plate rack_mount \
-                down_tube_flange
+                down_tube_gusset bb_junction head_tube_lug seat_tube_junction \
+                dropout_junction
 
 METAL_SINGLE_STL := $(patsubst %,$(STL_DIR)/metal/%.stl,$(METAL_SINGLE))
 
-# Tube sleeves (for straight tubes only - down tube uses flanges)
-SLEEVE_STL := $(STL_DIR)/metal/sleeve_seat_tube.stl \
+# Tube sleeves (for all straight tubes)
+SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
+              $(STL_DIR)/metal/sleeve_seat_tube.stl \
               $(STL_DIR)/metal/sleeve_chainstay.stl \
               $(STL_DIR)/metal/sleeve_seat_stay.stl
 
@@ -52,12 +54,26 @@ SEAT_STAY_STL := $(STL_DIR)/plastic-cf/seat_stay_0.stl \
 PLASTIC_STL := $(DOWN_TUBE_STL) $(SEAT_TUBE_STL) $(CHAINSTAY_STL) $(SEAT_STAY_STL)
 
 # =============================================================================
+# Assembly (complete frame)
+# =============================================================================
+ASSEMBLY_STL := $(STL_DIR)/assembly.stl
+
+# =============================================================================
 # All targets
 # =============================================================================
 ALL_STL := $(METAL_STL) $(PLASTIC_STL)
 
 # Default target
 all: $(ALL_STL)
+
+# Assembly target (not built by default - use 'make assembly')
+assembly: $(ASSEMBLY_STL)
+
+$(STL_DIR)/assembly.stl: $(SCAD_DIR)/assembly.scad $(CONFIG) $(wildcard $(COMPONENTS_DIR)/*/*.scad) | $(STL_DIR)
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
+
+$(STL_DIR):
+	mkdir -p $@
 
 # Create output directories
 $(STL_DIR)/metal:
@@ -73,7 +89,10 @@ $(STL_DIR)/plastic-cf:
 $(STL_DIR)/metal/%.stl: $(COMPONENTS_DIR)/metal/%.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
 
-# Tube sleeves (straight tubes only)
+# Tube sleeves (all straight tubes)
+$(STL_DIR)/metal/sleeve_down_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="down_tube"' $<
+
 $(STL_DIR)/metal/sleeve_seat_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="seat_tube"' $<
 
@@ -116,5 +135,8 @@ list:
 	@echo "$(PLASTIC_STL)" | tr ' ' '\n' | sed 's|^|  |'
 	@echo ""
 	@echo "Total: $(words $(ALL_STL)) STL files"
+	@echo ""
+	@echo "=== Assembly (use 'make assembly') ==="
+	@echo "  $(ASSEMBLY_STL)"
 
-.PHONY: all clean list
+.PHONY: all clean list assembly
