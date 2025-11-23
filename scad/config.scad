@@ -172,6 +172,9 @@ flange_bolt_count = 4;               // Bolts per flange pair
 flange_bolt_diameter = 6;            // M6 bolts
 lap_overlap = 25;                    // Tube overlap at joint
 
+// Bolt hole cutting length (must exceed max tube OD)
+bolt_hole_length = 75;
+
 // =============================================================================
 // MANUFACTURING TOLERANCES
 // =============================================================================

@@ -23,7 +23,7 @@ module seat_stay_section(section_num) {
                 rotate([0, 0, i * 180])  // Opposite sides
                     translate([0, 0, joint_overlap/2 + (i % 2) * 8])
                         rotate([90, 0, 0])
-                            cylinder(h = seat_stay_od, d = joint_bolt_diameter + 0.5, center = true);
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
 
@@ -32,7 +32,7 @@ module seat_stay_section(section_num) {
                 rotate([0, 0, i * 180])  // Opposite sides
                     translate([0, 0, seat_stay_section_length - joint_overlap/2 - (i % 2) * 8])
                         rotate([90, 0, 0])
-                            cylinder(h = seat_stay_od, d = joint_bolt_diameter + 0.5, center = true);
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
     }

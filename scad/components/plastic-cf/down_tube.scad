@@ -24,18 +24,20 @@ module down_tube_section(section_num) {
                 circle(d = down_tube_od + 6);  // Max OD (collar size)
 
         // Remove inner material to create tube with collar
-        // Main tube inner bore
-        rotate_extrude(angle = section_angle, $fn = 128)
-            translate([down_tube_curve_radius, 0, 0])
-                circle(d = down_tube_od - 2 * tube_wall_thickness);
+        // Main tube inner bore - extend slightly past ends to avoid coincident faces
+        rotate([0, 0, -0.01])
+            rotate_extrude(angle = section_angle + 0.02, $fn = 128)
+                translate([down_tube_curve_radius, 0, 0])
+                    circle(d = down_tube_od - 2 * tube_wall_thickness);
 
-        // Trim outer to standard OD for main section
-        rotate_extrude(angle = section_angle, $fn = 128)
-            translate([down_tube_curve_radius, 0, 0])
-                difference() {
-                    circle(d = down_tube_od + 10);  // Larger than max
-                    circle(d = down_tube_od);       // Standard OD
-                }
+        // Trim outer to standard OD for main section - extend slightly past ends
+        rotate([0, 0, -0.01])
+            rotate_extrude(angle = section_angle + 0.02, $fn = 128)
+                translate([down_tube_curve_radius, 0, 0])
+                    difference() {
+                        circle(d = down_tube_od + 10);  // Larger than max
+                        circle(d = down_tube_od);       // Standard OD
+                    }
 
         // Collar inner bore (fits over next section)
         if (section_num < down_tube_sections - 1) {
@@ -53,7 +55,7 @@ module down_tube_section(section_num) {
                         translate([down_tube_curve_radius, 0, 0])
                             rotate([radial_angle, 0, 0])
                                 rotate([0, 90, 0])
-                                    cylinder(h = 50, d = flange_bolt_diameter + 0.5, center = true);
+                                    cylinder(h = bolt_hole_length, d = flange_bolt_diameter + 0.5, center = true);
                 }
             }
         }
@@ -66,7 +68,7 @@ module down_tube_section(section_num) {
                         translate([down_tube_curve_radius, 0, 0])
                             rotate([radial_angle, 0, 0])
                                 rotate([0, 90, 0])
-                                    cylinder(h = 50, d = flange_bolt_diameter + 0.5, center = true);
+                                    cylinder(h = bolt_hole_length, d = flange_bolt_diameter + 0.5, center = true);
                 }
             }
         }
