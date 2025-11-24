@@ -199,10 +199,12 @@ chainstay_actual_length = _chainstay_core + 2 * junction_socket_depth;
 
 // Seat stay: from st_top + [0, ss_spread, st_seat_stay_z] to dropout + [0, ss_spread, dropout_seat_stay_z]
 // Keep at ss_spread for structural rigidity (no convergence with chainstay)
+// Seat tube junction end: collar extends outward, so tube starts at entry point (no inward insertion)
+// Dropout junction end: normal socket insertion
 _ss_start = _st_top + [0, _ss_spread, _st_seat_stay_z];
 _ss_end = _dropout + [0, _ss_spread, _dropout_seat_stay_z];
 _seat_stay_core = norm(_ss_end - _ss_start);
-seat_stay_length = _seat_stay_core + 2 * junction_socket_depth;
+seat_stay_length = _seat_stay_core + junction_socket_depth;
 
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);

@@ -7,7 +7,6 @@ include <../../config.scad>
 
 // Junction dimensions
 stj_height = 60;             // Height of junction
-socket_depth = 25;           // How deep tubes insert
 
 module seat_tube_junction() {
     // This junction is placed with:
@@ -37,48 +36,65 @@ module seat_tube_junction() {
     _tube_len = norm(st_top - bb_seat_tube);
     _tube_dir = (st_top - bb_seat_tube) / _tube_len;
 
-    // orient_to rotation angle around Y axis:
-    _st_az = atan2(_tube_dir[0], _tube_dir[2]);
+    // orient_to rotation angle around Y axis (same as used in assembly):
+    _dx_tube = st_top[0] - bb_seat_tube[0];
+    _dz_tube = st_top[2] - bb_seat_tube[2];
+    _az = atan2(_dx_tube, _dz_tube);
 
-    // To transform world offset [0, 0, st_seat_stay_z] to local coords,
-    // we need to think about what this offset means geometrically.
-    //
-    // st_seat_stay_z = -15 means 15mm below st_top in world Z
-    // In local coords (junction oriented along seat tube):
-    // - Going down in world Z means going "backward" along seat tube (negative local Z)
-    // - But also going "forward" in world X due to seat tube lean
-    //
-    // The local Z component is the projection onto tube axis:
-    //   local_z_offset = st_seat_stay_z * cos(90 - seat_tube_angle) = st_seat_stay_z * sin(seat_tube_angle)
-    // The local X component is the perpendicular:
-    //   local_x_offset = st_seat_stay_z * sin(90 - seat_tube_angle) = st_seat_stay_z * cos(seat_tube_angle)
-    //
-    // With seat_tube_angle = 72°, st_seat_stay_z = -15:
-    //   local_z_offset = -15 * sin(72°) ≈ -14.3
-    //   local_x_offset = -15 * cos(72°) ≈ -4.6
-    //
-    // Wait, that gives negative local X. Let me reconsider.
-    // Actually the issue is the direction of the perpendicular.
-    // When world Z decreases, local Z decreases AND local X increases (forward).
-    // So local_x = -st_seat_stay_z * cos(seat_tube_angle)
+    // Junction origin in world coords (same calculation as used for sockets)
+    junction_origin = bb_seat_tube + _tube_dir * (_tube_len - stj_height);
 
-    ss_local_x = -st_seat_stay_z * cos(seat_tube_angle);
-    ss_local_z = stj_height + st_seat_stay_z * sin(seat_tube_angle);
+    // Transform seat stay world position to local coords
+    // Seat stay connects at: st_top + [0, ±ss_spread, st_seat_stay_z]
+    ss_world_center = st_top + [0, 0, st_seat_stay_z];
+    ss_offset = ss_world_center - junction_origin;
+
+    // Apply inverse rotation (rotate by -_az around Y)
+    ss_local_x = ss_offset[0] * cos(_az) - ss_offset[2] * sin(_az);
+    ss_local_z = ss_offset[0] * sin(_az) + ss_offset[2] * cos(_az);
 
     // For dropout end points, we need the full direction
     // Seat stay goes from st_top + [0, ±ss_spread, st_seat_stay_z]
     //                  to dropout + [0, ±cs_spread, dropout_seat_stay_z]
 
     difference() {
-        // Hull the main collar with the seat stay lugs for integrated structure
-        hull() {
-            // Main body around seat tube (seat collar)
-            cylinder(h = stj_height, d = seat_tube_od + 16);
+        union() {
+            // Hull the main collar with the seat stay lugs for integrated structure
+            hull() {
+                // Main body around seat tube (seat collar)
+                cylinder(h = stj_height, d = seat_tube_od + 16);
 
-            // Seat stay lugs
+                // Seat stay lugs
+                for (side = [-1, 1]) {
+                    translate([ss_local_x, side * ss_spread, ss_local_z])
+                        sphere(r = seat_stay_od/2 + 8);
+                }
+            }
+
+            // Collar cylinders to cap seat stay sockets
+            // Use same coordinate transformation as sockets
             for (side = [-1, 1]) {
-                translate([ss_local_x, side * ss_spread, ss_local_z])
-                    sphere(r = seat_stay_od/2 + 8);
+                ss_world_start = st_top + [0, side * ss_spread, st_seat_stay_z];
+                ss_world_end = dropout + [0, side * ss_spread, dropout_seat_stay_z];
+
+                ss_start_offset = ss_world_start - junction_origin;
+                ss_local_start = [
+                    ss_start_offset[0] * cos(_az) - ss_start_offset[2] * sin(_az),
+                    ss_start_offset[1],
+                    ss_start_offset[0] * sin(_az) + ss_start_offset[2] * cos(_az)
+                ];
+
+                ss_end_offset = ss_world_end - junction_origin;
+                ss_local_end = [
+                    ss_end_offset[0] * cos(_az) - ss_end_offset[2] * sin(_az),
+                    ss_end_offset[1],
+                    ss_end_offset[0] * sin(_az) + ss_end_offset[2] * cos(_az)
+                ];
+
+                // Cylinder along seat stay axis extending toward dropout
+                // Provides socket material so tube doesn't need to penetrate deep into junction
+                orient_to(ss_local_start, ss_local_end)
+                    cylinder(h = junction_socket_depth + 10, d = seat_stay_od + 16);
             }
         }
 
@@ -97,19 +113,7 @@ module seat_tube_junction() {
             ss_world_start = st_top + [0, side * ss_spread, st_seat_stay_z];
             ss_world_end = dropout + [0, side * ss_spread, dropout_seat_stay_z];
 
-            // Junction origin in world coords
-            // Junction is placed at: orient_to(bb_seat_tube, st_top) translate([0,0,norm-stj_height])
-            // So junction origin (local [0,0,0]) is at world position along seat tube axis
-            _tube_len = norm(st_top - bb_seat_tube);
-            _tube_dir = (st_top - bb_seat_tube) / _tube_len;
-            junction_origin = bb_seat_tube + _tube_dir * (_tube_len - stj_height);
-
-            // Transform both endpoints to local coordinates
-            // First translate to junction origin, then apply inverse rotation
-            _dx_tube = st_top[0] - bb_seat_tube[0];
-            _dz_tube = st_top[2] - bb_seat_tube[2];
-            _az = atan2(_dx_tube, _dz_tube);
-
+            // Transform both endpoints to local coordinates using _az and junction_origin from above
             // Transform ss_world_start to local
             ss_start_offset = ss_world_start - junction_origin;
             ss_local_start = [
@@ -126,29 +130,39 @@ module seat_tube_junction() {
                 ss_end_offset[0] * sin(_az) + ss_end_offset[2] * cos(_az)
             ];
 
-            // Socket at ss_local_start, pointing toward ss_local_end (dropout)
-            // Extended to go completely through the lug
+            // Socket in collar - tube enters from dropout end
+            // Open at collar end (z=35), closed near body (cap at z=0 to z=5)
             orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, -socket_depth - 50])
-                    cylinder(h = socket_depth + 100, d = seat_stay_od + socket_clearance);
+                translate([0, 0, 5])
+                    cylinder(h = junction_socket_depth + 10, d = seat_stay_od + socket_clearance);
 
-            // Bolt holes at socket midpoint
-            // Single hole through both sides, offset away from junction center
+            // Bolt holes in collar section
             orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, -socket_depth/2])
+                translate([0, 0, junction_socket_depth/2])
                     rotate([90, 0, 0])
                         translate([0, 0, -seat_stay_od/2 - 8])
                             cylinder(h = seat_stay_od + 16, d = joint_bolt_diameter + 0.5);
         }
 
-        // Seat collar pinch slot
-        translate([seat_tube_od/2 + 5, -1, stj_height - 25])
-            cube([10, 2, 26]);
+        // Seat collar pinch slot - cuts through body but not all the way in Y
+        // Leave material on front and back for bolt to clamp
+        translate([0, -1, stj_height - 25])
+            cube([seat_tube_od/2 + 16, 2, 26]);
 
-        // Seat collar pinch bolt
-        translate([seat_tube_od/2 + 8, 0, stj_height - 12])
+        // Seat collar pinch bolt hole
+        translate([seat_tube_od/2 + 4, 0, stj_height - 12])
             rotate([90, 0, 0])
-                cylinder(h = seat_tube_od + 20, d = 5.5, center = true);
+                cylinder(h = seat_tube_od + 16, d = 5.5, center = true);
+
+        // Counterbore for bolt head (front) - extends past body edge
+        translate([seat_tube_od/2 + 4, seat_tube_od/2 + 10, stj_height - 12])
+            rotate([90, 0, 0])
+                cylinder(h = 15, d = 10);
+
+        // Counterbore for nut (back) - extends past body edge
+        translate([seat_tube_od/2 + 4, -seat_tube_od/2 - 10, stj_height - 12])
+            rotate([-90, 0, 0])
+                cylinder(h = 15, d = 10);
     }
 }
 
