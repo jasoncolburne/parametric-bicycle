@@ -5,7 +5,7 @@ OPENSCAD := /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD
 # OPENSCAD := openscad
 
 # OpenSCAD flags (Manifold is default in 2024+)
-OPENSCAD_FLAGS :=
+OPENSCAD_FLAGS := --backend=Manifold
 
 # Directories
 SCAD_DIR := scad

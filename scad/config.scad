@@ -139,38 +139,81 @@ max_section_length = 245;            // FibreSeeker 3 Z height
 ht_bottom_x = reach + head_tube_length * cos(head_tube_angle);
 ht_bottom_z = stack - head_tube_length * sin(head_tube_angle);
 
-// Down tube total length (from head tube bottom to BB)
-down_tube_length = sqrt(pow(ht_bottom_x, 2) + pow(ht_bottom_z, 2));
-
 // Seat tube
-seat_tube_length = frame_size;       // Same as frame size parameter
 seat_tube_od = 34;                   // Outer diameter
 
-// Seat tube top position
-st_top_x = -seat_tube_length * cos(seat_tube_angle);
-st_top_z = seat_tube_length * sin(seat_tube_angle);
+// Seat tube top position (from origin along seat tube angle)
+st_top_x = -frame_size * cos(seat_tube_angle);
+st_top_z = frame_size * sin(seat_tube_angle);
 
 // Dropout position (from chainstay geometry)
 dropout_x = -sqrt(pow(chainstay_length, 2) - pow(bb_drop, 2));
 dropout_z = -bb_drop;
 
-// Seat stay total length (from seat tube top to dropout)
-seat_stay_length = sqrt(pow(dropout_x - st_top_x, 2) + pow(dropout_z - st_top_z, 2));
-
 // Chainstay and seat stay wall thickness
 chainstay_wall = 2.5;
 seat_stay_wall = 2;
 
+// --- CONNECTION POINT OFFSETS ---
+// These offsets position tube connections to clear the BB bore
+// BB bore radius = bb_shell_od/2 = 21mm
+_bb_down_tube_offset = [25, 0, bb_shell_od/2 + down_tube_od/2 + 3];
+_bb_seat_tube_offset = [-15, 0, bb_shell_od/2 + seat_tube_od/2 + 3];
+_bb_chainstay_z = -(bb_shell_od/2 + chainstay_od/2 + 3);
+
+// Head tube connection (down tube connects 30mm up from bottom)
+_ht_down_tube = [ht_bottom_x, 0, ht_bottom_z + 30];
+
+// Seat tube top and seat stay connection
+_st_top = [st_top_x, 0, st_top_z];
+_st_seat_stay_z = -15;
+
+// Dropout connections
+_dropout = [dropout_x, 0, dropout_z];
+_dropout_chainstay_z = 30;              // Raised to clear axle with structural material (chainstay_od/2 + axle_d/2 + 8mm wall)
+_dropout_seat_stay_z = 60;              // Raised proportionally
+
+// Spreads
+_cs_spread = 60;                      // Chainstay spread at BB and dropout
+_ss_spread = 35;                      // Seat stay spread (inward from chainstay to avoid collision)
+
+// --- SOCKET DEPTH FOR JUNCTIONS ---
+junction_socket_depth = 25;  // How deep tubes insert into junction sockets
+
+// --- ACTUAL TUBE LENGTHS (from connection points + socket insertion) ---
+// Tubes extend from connection point to connection point, PLUS socket depth at each end
+
+// Down tube: from ht_down_tube to bb_down_tube + socket depth at each end
+_down_tube_core = norm(_bb_down_tube_offset - _ht_down_tube);
+down_tube_length = _down_tube_core + 2 * junction_socket_depth;
+
+// Seat tube: from bb_seat_tube to st_top + socket depth at each end
+_seat_tube_core = norm(_st_top - _bb_seat_tube_offset);
+seat_tube_length = _seat_tube_core + 2 * junction_socket_depth;
+
+// Chainstay: from [0, cs_spread, bb_chainstay_z] to dropout + [0, cs_spread, dropout_chainstay_z]
+_cs_start = [0, _cs_spread, _bb_chainstay_z];
+_cs_end = _dropout + [0, _cs_spread, _dropout_chainstay_z];
+_chainstay_core = norm(_cs_end - _cs_start);
+chainstay_actual_length = _chainstay_core + 2 * junction_socket_depth;
+
+// Seat stay: from st_top + [0, ss_spread, st_seat_stay_z] to dropout + [0, ss_spread, dropout_seat_stay_z]
+// Keep at ss_spread for structural rigidity (no convergence with chainstay)
+_ss_start = _st_top + [0, _ss_spread, _st_seat_stay_z];
+_ss_end = _dropout + [0, _ss_spread, _dropout_seat_stay_z];
+_seat_stay_core = norm(_ss_end - _ss_start);
+seat_stay_length = _seat_stay_core + 2 * junction_socket_depth;
+
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);
 seat_tube_sections = ceil(seat_tube_length / max_section_length);
-chainstay_sections = ceil(chainstay_length / max_section_length);
+chainstay_sections = ceil(chainstay_actual_length / max_section_length);
 seat_stay_sections = ceil(seat_stay_length / max_section_length);
 
 // --- DERIVED SECTION LENGTHS ---
 down_tube_section_length = down_tube_length / down_tube_sections;
 seat_tube_section_length = seat_tube_length / seat_tube_sections;
-chainstay_section_length = chainstay_length / chainstay_sections;
+chainstay_section_length = chainstay_actual_length / chainstay_sections;
 seat_stay_section_length = seat_stay_length / seat_stay_sections;
 
 // Down tube gusset angle (for step-through bend)
@@ -207,27 +250,47 @@ socket_clearance = 0.3;
 // DISPLAY COLORS (for assembly visualization)
 // =============================================================================
 color_metal = "silver";
-color_plastic = "darkgray";
+color_plastic = "black";
 
 // =============================================================================
 // COMMON CONSTANTS
 // =============================================================================
-$fn = 64;                            // Circle resolution
+// Circle resolution based on manufacturing precision
+fn_cnc = 512;                        // CNC milled parts (±0.02mm precision)
+fn_print = 256;                       // 3D printed parts (±0.2mm precision)
+fn_assembly = 64;                    // Assembly preview (for performance)
+
+$fn = fn_cnc;                        // Default to CNC precision
 epsilon = 0.01;                      // For boolean operations
 
 // =============================================================================
 // KEY FRAME POINTS (for positioning)
 // =============================================================================
-// BB at origin
+// BB center at origin
 bb = [0, 0, 0];
 ht_top = [reach, 0, stack];
 ht_bottom = [ht_bottom_x, 0, ht_bottom_z];
-st_top = [st_top_x, 0, st_top_z];
-dropout = [dropout_x, 0, dropout_z];
+st_top = _st_top;
+dropout = _dropout;
+
+// Tube connection points around BB shell
+bb_down_tube = _bb_down_tube_offset;
+bb_seat_tube = _bb_seat_tube_offset;
+bb_chainstay_z = _bb_chainstay_z;
+
+// Tube connection points at head tube
+ht_down_tube = _ht_down_tube;
+
+// Tube connection points at seat tube top
+st_seat_stay_z = _st_seat_stay_z;
+
+// Tube connection points at dropout
+dropout_chainstay_z = _dropout_chainstay_z;
+dropout_seat_stay_z = _dropout_seat_stay_z;
 
 // Tube spreads (lateral offsets)
-cs_spread = 60;                      // Chainstay spread at BB
-ss_spread = 50;                      // Seat stay spread at seat tube top
+cs_spread = _cs_spread;
+ss_spread = _ss_spread;
 
 // =============================================================================
 // HELPER MODULE: Orient object from point A toward point B

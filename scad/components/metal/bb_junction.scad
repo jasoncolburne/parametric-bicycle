@@ -6,93 +6,88 @@
 
 include <../../config.scad>
 
-// Import tube modules for boolean subtraction
-use <../plastic-cf/down_tube.scad>
-use <../plastic-cf/seat_tube.scad>
-use <../plastic-cf/chainstay.scad>
-
 // Junction dimensions
-bb_junc_width = 100;         // Width (lateral)
-bb_junc_height = 80;         // Height (vertical)
-bb_junc_depth = 60;          // Depth (fore-aft)
-tube_socket_depth = 30;      // How deep tubes insert
+bb_junc_width = 160;         // Width (lateral) - accommodates chainstay spread
+bb_junc_height = 120;        // Height (vertical)
+bb_junc_depth = 100;         // Depth (fore-aft)
+socket_depth = 25;           // How deep tubes insert
 
 module bb_junction() {
+    // Calculate local coordinates for tube endpoints
+    // BB junction is at origin [0, 0, 0]
+
+    // Down tube: from ht_down_tube to bb_down_tube
+    dt_end = bb_down_tube;
+    dt_start = ht_down_tube;
+
+    // Seat tube: from bb_seat_tube to st_top
+    st_end = bb_seat_tube;  // This is where seat tube starts (at BB)
+    st_start = st_top;      // Seat tube goes toward st_top
+
+    // Chainstays: from [0, ±cs_spread, bb_chainstay_z] to dropout + [0, ±cs_spread, dropout_chainstay_z]
+    // We handle both sides
+
     difference() {
-        // Main body - rounded block
+        // Main body - rounded block centered on BB
         hull() {
-            for (x = [10, bb_junc_depth - 10]) {
-                for (y = [10, bb_junc_width - 10]) {
-                    translate([x - bb_junc_depth/2, y - bb_junc_width/2, 0])
-                        cylinder(h = bb_junc_height, r = 10);
+            for (x = [-bb_junc_depth/2 + 15, bb_junc_depth/2 - 15]) {
+                for (y = [-bb_junc_width/2 + 15, bb_junc_width/2 - 15]) {
+                    translate([x, y, -bb_junc_height/2 + 15])
+                        sphere(r = 15);
+                    translate([x, y, bb_junc_height/2 - 15])
+                        sphere(r = 15);
                 }
             }
         }
 
         // BB shell bore (through center, lateral)
-        translate([0, -bb_junc_width/2 - epsilon, bb_junc_height/2])
-            rotate([-90, 0, 0])
-                cylinder(h = bb_junc_width + 2*epsilon, d = bb_shell_od + 0.5);
+        rotate([90, 0, 0])
+            cylinder(h = bb_junc_width + 10, d = bb_shell_od + 0.5, center = true);
 
-        // --- TUBE SOCKETS (using actual tube geometry) ---
-
-        // Down tube socket - positioned same as in assembly
-        // Down tube goes from ht_bottom toward bb, so we position at bb end
-        orient_to(ht_bottom, bb)
-            translate([0, 0, down_tube_length - tube_socket_depth - epsilon])
-                cylinder(h = tube_socket_depth + 2*epsilon, d = down_tube_od + socket_clearance);
+        // Down tube socket - at dt_end, pointing toward dt_start
+        // Socket extends both inward and outward from connection point
+        orient_to(dt_end, dt_start)
+            translate([0, 0, -socket_depth])
+                cylinder(h = socket_depth * 2, d = down_tube_od + socket_clearance);
 
         // Down tube bolt holes
-        orient_to(ht_bottom, bb)
-            translate([0, 0, down_tube_length - tube_socket_depth/2])
-                for (i = [0:1])
-                    rotate([0, 0, i * 180])
+        orient_to(dt_end, dt_start)
+            translate([0, 0, -socket_depth/2])
+                for (angle = [0, 180])
+                    rotate([0, 0, angle])
                         rotate([90, 0, 0])
-                            cylinder(h = bb_junc_width, d = joint_bolt_diameter + 0.5, center = true);
+                            cylinder(h = 60, d = joint_bolt_diameter + 0.5, center = true);
 
-        // Seat tube socket - goes from bb toward st_top
-        orient_to(bb, st_top)
-            translate([0, 0, -epsilon])
-                cylinder(h = tube_socket_depth + epsilon, d = seat_tube_od + socket_clearance);
+        // Seat tube socket - at st_end, pointing toward st_start
+        orient_to(st_end, st_start)
+            translate([0, 0, -socket_depth])
+                cylinder(h = socket_depth * 2, d = seat_tube_od + socket_clearance);
 
         // Seat tube bolt holes
-        orient_to(bb, st_top)
-            translate([0, 0, tube_socket_depth/2])
-                for (i = [0:1])
-                    rotate([0, 0, i * 180])
+        orient_to(st_end, st_start)
+            translate([0, 0, -socket_depth/2])
+                for (angle = [0, 180])
+                    rotate([0, 0, angle])
                         rotate([90, 0, 0])
-                            cylinder(h = bb_junc_width, d = joint_bolt_diameter + 0.5, center = true);
+                            cylinder(h = 60, d = joint_bolt_diameter + 0.5, center = true);
 
-        // Left chainstay socket
-        orient_to(bb + [0, -cs_spread, 0], dropout + [0, -cs_spread, 0])
-            translate([0, 0, -epsilon])
-                cylinder(h = tube_socket_depth + epsilon, d = chainstay_od + 4 + socket_clearance);  // +4 for BB end taper
+        // Chainstay sockets - both sides
+        for (side = [-1, 1]) {
+            cs_end = [0, side * cs_spread, bb_chainstay_z];
+            cs_start = dropout + [0, side * cs_spread, dropout_chainstay_z];
 
-        // Left chainstay bolt holes
-        orient_to(bb + [0, -cs_spread, 0], dropout + [0, -cs_spread, 0])
-            translate([0, 0, tube_socket_depth/2])
-                for (i = [0:1])
-                    rotate([0, 0, i * 180])
-                        rotate([90, 0, 0])
-                            cylinder(h = bb_junc_depth, d = joint_bolt_diameter + 0.5, center = true);
+            // Socket - at cs_end, pointing toward cs_start
+            orient_to(cs_end, cs_start)
+                translate([0, 0, -socket_depth])
+                    cylinder(h = socket_depth * 2, d = chainstay_od + socket_clearance);
 
-        // Right chainstay socket
-        orient_to(bb + [0, cs_spread, 0], dropout + [0, cs_spread, 0])
-            translate([0, 0, -epsilon])
-                cylinder(h = tube_socket_depth + epsilon, d = chainstay_od + 4 + socket_clearance);
-
-        // Right chainstay bolt holes
-        orient_to(bb + [0, cs_spread, 0], dropout + [0, cs_spread, 0])
-            translate([0, 0, tube_socket_depth/2])
-                for (i = [0:1])
-                    rotate([0, 0, i * 180])
-                        rotate([90, 0, 0])
-                            cylinder(h = bb_junc_depth, d = joint_bolt_diameter + 0.5, center = true);
-
-        // Weight reduction holes
-        for (y = [-20, 20]) {
-            translate([0, y, -epsilon])
-                cylinder(h = bb_junc_height/3, d = 15);
+            // Bolt holes
+            orient_to(cs_end, cs_start)
+                translate([0, 0, -socket_depth/2])
+                    for (angle = [0, 180])
+                        rotate([0, 0, angle])
+                            rotate([90, 0, 0])
+                                cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
         }
     }
 }

@@ -15,20 +15,42 @@ module down_tube_section(section_num) {
             cylinder(h = down_tube_section_length + 2*epsilon,
                      d = down_tube_od - 2 * tube_wall_thickness);
 
-        // Bolt holes at bottom end (for head tube end or gusset)
-        for (i = [0:joint_bolt_count-1]) {
-            rotate([0, 0, i * 180])  // Opposite sides
-                translate([0, 0, joint_overlap/2 + (i % 2) * 8])
-                    rotate([90, 0, 0])
-                        cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        // Junction bolt holes at tube ends (for through-bolts in junction sockets)
+        // First section: holes at start for head tube lug
+        if (section_num == 0) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
         }
 
-        // Bolt holes at top end (for gusset or BB end)
-        for (i = [0:joint_bolt_count-1]) {
-            rotate([0, 0, i * 180])  // Opposite sides
-                translate([0, 0, down_tube_section_length - joint_overlap/2 - (i % 2) * 8])
-                    rotate([90, 0, 0])
-                        cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        // Last section: holes at end for BB junction
+        if (section_num == down_tube_sections - 1) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, down_tube_section_length - junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
+
+        // Bolt holes for sleeve joint/gusset between sections
+        if (section_num > 0) {
+            for (i = [0:joint_bolt_count-1]) {
+                rotate([0, 0, i * 180])  // Opposite sides
+                    translate([0, 0, joint_overlap/2 + (i % 2) * 8])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+            }
+        }
+
+        if (section_num < down_tube_sections - 1) {
+            for (i = [0:joint_bolt_count-1]) {
+                rotate([0, 0, i * 180])  // Opposite sides
+                    translate([0, 0, down_tube_section_length - joint_overlap/2 - (i % 2) * 8])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+            }
         }
     }
 }

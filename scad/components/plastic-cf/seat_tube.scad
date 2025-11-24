@@ -4,8 +4,7 @@
 
 include <../../config.scad>
 
-// Calculate section length
-seat_tube_section_length = seat_tube_length / seat_tube_sections;
+// Note: seat_tube_section_length is defined in config.scad
 
 module seat_tube_section(section_num) {
     difference() {
@@ -16,7 +15,26 @@ module seat_tube_section(section_num) {
         translate([0, 0, -epsilon])
             cylinder(h = seat_tube_section_length + 2*epsilon, d = seat_tube_id);
 
-        // Bolt holes for sleeve joint - properly spaced around tube
+        // Junction bolt holes at tube ends (for through-bolts in junction sockets)
+        // First section: holes at start for BB junction
+        if (section_num == 0) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
+
+        // Last section: holes at end for seat tube junction
+        if (section_num == seat_tube_sections - 1) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, seat_tube_section_length - junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
+
+        // Bolt holes for sleeve joint between sections
         // Bottom of section (if not first)
         if (section_num > 0) {
             for (i = [0:joint_bolt_count-1]) {

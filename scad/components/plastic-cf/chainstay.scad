@@ -5,8 +5,7 @@
 
 include <../../config.scad>
 
-// Calculate section length
-chainstay_section_length = chainstay_length / chainstay_sections;
+// Note: chainstay_section_length is defined in config.scad
 
 module chainstay_section(section_num) {
     // Calculate taper for this section
@@ -28,7 +27,26 @@ module chainstay_section(section_num) {
         translate([0, 0, -epsilon])
             cylinder(h = chainstay_section_length + 2*epsilon, d1 = start_id, d2 = end_id);
 
-        // Bolt holes for sleeve joint - properly spaced around tube
+        // Junction bolt holes at tube ends (for through-bolts in junction sockets)
+        // First section: holes at start for BB junction
+        if (section_num == 0) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
+
+        // Last section: holes at end for dropout junction
+        if (section_num == chainstay_sections - 1) {
+            for (angle = [0, 180])
+                rotate([0, 0, angle])
+                    translate([0, 0, chainstay_section_length - junction_socket_depth/2])
+                        rotate([90, 0, 0])
+                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
+
+        // Bolt holes for sleeve joint between sections
         if (section_num > 0) {
             for (i = [0:joint_bolt_count-1]) {
                 rotate([0, 0, i * 180])  // Opposite sides
