@@ -7,7 +7,7 @@ include <config.scad>
 $fn = fn_assembly;
 
 // Metal transparency for geometry verification (1.0 = opaque, 0.3 = transparent)
-alpha_metal = 0.3;
+alpha_metal = 0.25;
 
 // Import component modules
 use <components/metal/bb_shell.scad>
@@ -92,14 +92,15 @@ module frame_assembly() {
     // --- SEAT STAYS ---
     // Connect from st_top area to dropout area
     // Keep at ss_spread for structural rigidity (no convergence with chainstay)
-    // Seat tube junction collar extends outward, so tube starts at entry point (no offset)
     color(color_plastic)
         for (side = [-1, 1])
             orient_to(st_top + [0, side * ss_spread, st_seat_stay_z],
                       dropout + [0, side * ss_spread, dropout_seat_stay_z])
+                translate([0, 0, -junction_socket_depth/2])
                     for (i = [0:seat_stay_sections-1])
                         translate([0, 0, i * seat_stay_section_length])
                             seat_stay_section(i);
+
 
     // --- DROPOUT JUNCTIONS ---
     color(color_metal, alpha_metal)

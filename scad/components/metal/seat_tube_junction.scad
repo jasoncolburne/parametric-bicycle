@@ -96,16 +96,30 @@ module seat_tube_junction() {
                 orient_to(ss_local_start, ss_local_end)
                     cylinder(h = junction_socket_depth + 10, d = seat_stay_od + 16);
             }
+
+            // Pinch bolt sleeve - connects the two counterbore surfaces
+            translate([seat_tube_od/2 + 4, 0, stj_height - 12])
+                rotate([90, 0, 0])
+                    cylinder(h = seat_tube_od + 16, d = 10, center = true);
         }
 
-        // Seat tube bore (continues through entire junction for seat tube insertion)
-        // Extended to clear through hulled body
+        // Seat tube bore (for seat tube insertion from bottom)
+        // Extends from bottom to below seat post bore
         translate([0, 0, -10])
-            cylinder(h = stj_height + 20, d = seat_tube_od + socket_clearance);
+            cylinder(h = 45, d = seat_tube_od + socket_clearance);
+
+        // Seat tube bolt holes (match tube orientation and position)
+        // Position on left/right sides, oriented front-to-back
+        translate([0, 0, 22.5])
+            for (side = [-1, 1])
+                translate([0, side * ((seat_tube_od + socket_clearance)/2 + 3), 0])
+                    rotate([90, 0, 0])
+                        cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
 
         // Seat post bore (smaller, for seatpost at top)
-        translate([0, 0, stj_height - 20])
-            cylinder(h = 21, d = seat_tube_id);
+        // Starts where seat tube ends and extends upward through hull
+        translate([0, 0, 35])
+            cylinder(h = stj_height - 35 + 10, d = seat_tube_id);
 
         // Seat stay sockets
         for (side = [-1, 1]) {
@@ -131,17 +145,20 @@ module seat_tube_junction() {
             ];
 
             // Socket in collar - tube enters from dropout end
-            // Open at collar end (z=35), closed near body (cap at z=0 to z=5)
             orient_to(ss_local_start, ss_local_end)
                 translate([0, 0, 5])
                     cylinder(h = junction_socket_depth + 10, d = seat_stay_od + socket_clearance);
 
             // Bolt holes in collar section
+            // Position holes at [0, 180] to match tube holes
+            // Socket bottom at Z=30 (starts at 5, depth is 25), holes at 12.5mm from bottom = Z=17.5
             orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, junction_socket_depth/2])
-                    rotate([90, 0, 0])
-                        translate([0, 0, -seat_stay_od/2 - 8])
-                            cylinder(h = seat_stay_od + 16, d = joint_bolt_diameter + 0.5);
+                translate([0, 0, 17.5])
+                    for (angle = [0, 180])
+                        rotate([0, 0, angle])
+                            rotate([90, 0, 0])
+                                translate([0, 0, -seat_stay_od/2 - 8])
+                                    cylinder(h = seat_stay_od + 16, d = joint_bolt_diameter + 0.5);
         }
 
         // Seat collar pinch slot - cuts through body but not all the way in Y

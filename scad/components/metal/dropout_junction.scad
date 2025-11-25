@@ -8,7 +8,6 @@ include <../../config.scad>
 // Junction dimensions
 dj_width = 60;               // Width (lateral) - increased to accommodate ss_spread offset
 dj_depth = 50;               // Depth (fore-aft)
-socket_depth = 25;           // How deep tubes insert
 
 module dropout_junction(side = 1) {
     // Calculate local coordinates for tube endpoints
@@ -51,32 +50,29 @@ module dropout_junction(side = 1) {
                 sphere(r = seat_stay_od/2 + 10);
         }
 
-        // Chainstay socket - at cs_end, pointing toward cs_start
-        // Extends inward by socket_depth, outward by 5mm to capture tube end
+        // Chainstay socket - tube enters from BB end
+        // Open at surface, cap inside body
         orient_to(cs_end, cs_start)
-            translate([0, 0, -socket_depth])
-                cylinder(h = socket_depth + 5, d = chainstay_od + socket_clearance);
+            translate([0, 0, -junction_socket_depth])
+                cylinder(h = junction_socket_depth + 25, d = chainstay_od + socket_clearance);
 
-        // Chainstay bolt holes
+        // Chainstay bolt hole - in middle of socket
         orient_to(cs_end, cs_start)
-            translate([0, 0, -socket_depth/2])
-                for (angle = [0, 180])
-                    rotate([0, 0, angle])
-                        rotate([90, 0, 0])
-                            cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
+            translate([0, 0, junction_socket_depth/2 - 25])
+                rotate([90, 0, 0])
+                    cylinder(h = chainstay_od + 20, d = joint_bolt_diameter + 0.5, center = true);
 
-        // Seat stay socket - at ss_end, pointing toward ss_start
+        // Seat stay socket - tube enters from seat tube junction end
+        // Open at surface, cap inside body
         orient_to(ss_end, ss_start)
-            translate([0, 0, -socket_depth])
-                cylinder(h = socket_depth + 1, d = seat_stay_od + socket_clearance);
+            translate([0, 0, -junction_socket_depth])
+                cylinder(h = junction_socket_depth + 25, d = seat_stay_od + socket_clearance);
 
-        // Seat stay bolt holes
+        // Seat stay bolt hole - in middle of socket
         orient_to(ss_end, ss_start)
-            translate([0, 0, -socket_depth/2])
-                for (angle = [0, 180])
-                    rotate([0, 0, angle])
-                        rotate([90, 0, 0])
-                            cylinder(h = 50, d = joint_bolt_diameter + 0.5, center = true);
+            translate([0, 0, junction_socket_depth/2 - 25])
+                rotate([90, 0, 0])
+                    cylinder(h = seat_stay_od + 30, d = joint_bolt_diameter + 0.5, center = true);
 
         // Axle clearance
         translate([0, 0, 0])
@@ -85,5 +81,7 @@ module dropout_junction(side = 1) {
     }
 }
 
-// Render for preview
-dropout_junction();
+// Render for preview or build (set via -D render_side=N)
+render_side = 1;  // Default for preview (right side)
+
+dropout_junction(render_side);

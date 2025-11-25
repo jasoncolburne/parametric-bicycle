@@ -18,10 +18,13 @@ CONFIG := $(SCAD_DIR)/config.scad
 # =============================================================================
 METAL_SINGLE := dropout bb_shell head_tube seat_collar motor_mount \
                 battery_mount brake_mount cable_guide gusset_plate rack_mount \
-                down_tube_gusset bb_junction head_tube_lug seat_tube_junction \
-                dropout_junction
+                down_tube_gusset bb_junction head_tube_lug seat_tube_junction
 
 METAL_SINGLE_STL := $(patsubst %,$(STL_DIR)/metal/%.stl,$(METAL_SINGLE))
+
+# Dropout junctions (left and right)
+DROPOUT_JUNCTION_STL := $(STL_DIR)/metal/dropout_junction_left.stl \
+                        $(STL_DIR)/metal/dropout_junction_right.stl
 
 # Tube sleeves (for all straight tubes)
 SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
@@ -29,7 +32,7 @@ SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
               $(STL_DIR)/metal/sleeve_chainstay.stl \
               $(STL_DIR)/metal/sleeve_seat_stay.stl
 
-METAL_STL := $(METAL_SINGLE_STL) $(SLEEVE_STL)
+METAL_STL := $(METAL_SINGLE_STL) $(DROPOUT_JUNCTION_STL) $(SLEEVE_STL)
 
 # =============================================================================
 # Plastic-CF Components (sectioned tubes)
@@ -88,6 +91,13 @@ $(STL_DIR)/plastic-cf:
 # Single metal components
 $(STL_DIR)/metal/%.stl: $(COMPONENTS_DIR)/metal/%.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
+
+# Dropout junctions (left and right)
+$(STL_DIR)/metal/dropout_junction_left.stl: $(COMPONENTS_DIR)/metal/dropout_junction.scad $(CONFIG) | $(STL_DIR)/metal
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_side=-1' $<
+
+$(STL_DIR)/metal/dropout_junction_right.stl: $(COMPONENTS_DIR)/metal/dropout_junction.scad $(CONFIG) | $(STL_DIR)/metal
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_side=1' $<
 
 # Tube sleeves (all straight tubes)
 $(STL_DIR)/metal/sleeve_down_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
