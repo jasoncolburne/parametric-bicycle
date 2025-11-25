@@ -27,13 +27,13 @@ module down_tube_gusset() {
         // Socket for upper tube section (angled down)
         translate([gusset_block_width/2, gusset_block_depth/2, gusset_block_height])
             rotate([0, 180 - half_angle, 0])
-                cylinder(h = socket_depth + epsilon, d = down_tube_od + 0.5);
+                cylinder(h = socket_depth + epsilon, d = down_tube_od + socket_clearance);
 
         // Socket for lower tube section (angled up)
         translate([gusset_block_width/2, gusset_block_depth/2, 0])
             rotate([0, half_angle, 0])
                 translate([0, 0, -epsilon])
-                    cylinder(h = socket_depth + epsilon, d = down_tube_od + 0.5);
+                    cylinder(h = socket_depth + epsilon, d = down_tube_od + socket_clearance);
 
         // Bolt holes for upper tube - aligned with tube bolt pattern
         translate([gusset_block_width/2, gusset_block_depth/2, gusset_block_height])

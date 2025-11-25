@@ -145,15 +145,19 @@ module seat_tube_junction() {
             ];
 
             // Socket in collar - tube enters from dropout end
+            // Standard depth: starts at Z=5, extends junction_socket_depth (25mm to Z=30)
             orient_to(ss_local_start, ss_local_end)
                 translate([0, 0, 5])
-                    cylinder(h = junction_socket_depth + 10, d = seat_stay_od + socket_clearance);
+                    cylinder(h = junction_socket_depth, d = seat_stay_od + socket_clearance);
 
             // Bolt holes in collar section
             // Position holes at [0, 180] to match tube holes
-            // Socket bottom at Z=30 (starts at 5, depth is 25), holes at 12.5mm from bottom = Z=17.5
+            // Socket starts at Z=5, extends to Z=30 (5 + 25 standard depth)
+            // Tube starts at ss_local_start with -5mm offset, so tube Z=0 at ss_local_start
+            // Tube bolt at 12.5mm from tube start = Z=12.5 relative to ss_local_start = Z=7.5 in junction coords
+            // So junction bolt should be at Z=7.5 to align
             orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, 17.5])
+                translate([0, 0, 7.5])
                     for (angle = [0, 180])
                         rotate([0, 0, angle])
                             rotate([90, 0, 0])

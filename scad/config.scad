@@ -8,6 +8,14 @@ rider_height = 173;
 rider_weight = 55;
 
 // =============================================================================
+// WHEEL CONFIGURATION
+// =============================================================================
+wheel_size = "27.5";             // 27.5" / 650b
+wheel_bsd = 584;                  // Bead seat diameter (mm) - ISO 584
+wheel_tire_width = 50;            // Recommended tire width (mm) - 50-55mm range
+wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
+
+// =============================================================================
 // FRAME GEOMETRY
 // =============================================================================
 frame_size = 520;                    // Seat tube center-to-top
@@ -16,10 +24,10 @@ head_tube_length = 140;
 head_tube_angle = 70;
 seat_tube_angle = 72;
 chainstay_length = 460;
-bb_drop = 65;
-wheelbase = 1080;
+bb_drop = 77.5;                      // 27.5" wheel radius (342mm) - target BB height (264.5mm) = 77.5mm
+wheelbase = 1078;                    // Recalculated from dropout position (was 1080)
 standover_height = 450;              // Step-through
-stack = 620;
+stack = 633;                         // Increased for larger front wheel (was 620)
 reach = 370;
 
 // =============================================================================
@@ -146,7 +154,7 @@ seat_tube_od = 34;                   // Outer diameter
 st_top_x = -frame_size * cos(seat_tube_angle);
 st_top_z = frame_size * sin(seat_tube_angle);
 
-// Dropout position (from chainstay geometry)
+// Dropout position - recalculates when bb_drop changes (wheel size dependent)
 dropout_x = -sqrt(pow(chainstay_length, 2) - pow(bb_drop, 2));
 dropout_z = -bb_drop;
 
@@ -201,11 +209,12 @@ chainstay_actual_length = _chainstay_core + 2 * junction_socket_depth;
 
 // Seat stay: from st_top + [0, ss_spread, st_seat_stay_z] to dropout + [0, ss_spread, dropout_seat_stay_z]
 // Keep at ss_spread for structural rigidity (no convergence with chainstay)
-// Both ends need socket insertion
+// Seat tube junction end: only 12.5mm insertion (socket starts at Z=5)
+// Dropout junction end: full 25mm insertion
 _ss_start = _st_top + [0, _ss_spread, _st_seat_stay_z];
 _ss_end = _dropout + [0, _ss_spread, _dropout_seat_stay_z];
 _seat_stay_core = norm(_ss_end - _ss_start);
-seat_stay_length = _seat_stay_core + 2 * junction_socket_depth;
+seat_stay_length = _seat_stay_core + junction_socket_depth/2 + junction_socket_depth;
 
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);
