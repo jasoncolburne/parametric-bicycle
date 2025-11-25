@@ -7,6 +7,9 @@ OPENSCAD := /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD
 # OpenSCAD flags (Manifold is default in 2024+)
 OPENSCAD_FLAGS := --backend=Manifold
 
+# Blender executable
+BLENDER := blender
+
 # Directories
 SCAD_DIR := scad
 COMPONENTS_DIR := $(SCAD_DIR)/components
@@ -132,10 +135,41 @@ $(STL_DIR)/plastic-cf/seat_stay_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_stay.sc
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # =============================================================================
+# Assembly rendering for visual verification
+# =============================================================================
+IMG_DIR := img
+ASSEMBLY_VIEWS := $(IMG_DIR)/assembly_full.png \
+                  $(IMG_DIR)/bb_junction.png \
+                  $(IMG_DIR)/seat_tube_junction.png \
+                  $(IMG_DIR)/dropout_junction.png
+
+# Render all assembly views
+render: $(ASSEMBLY_VIEWS)
+
+$(IMG_DIR):
+	mkdir -p $@
+
+# Full frame isometric view
+$(IMG_DIR)/assembly_full.png: $(ASSEMBLY_STL) render_stl.py | $(IMG_DIR)
+	$(BLENDER) -b -P render_stl.py -- $< $@ full
+
+# BB Junction closeup (centered at origin)
+$(IMG_DIR)/bb_junction.png: $(ASSEMBLY_STL) render_stl.py | $(IMG_DIR)
+	$(BLENDER) -b -P render_stl.py -- $< $@ bb
+
+# Seat Tube Junction closeup (st_top ~= [-227, 0, 481])
+$(IMG_DIR)/seat_tube_junction.png: $(ASSEMBLY_STL) render_stl.py | $(IMG_DIR)
+	$(BLENDER) -b -P render_stl.py -- $< $@ seat_tube
+
+# Dropout Junction closeup (dropout ~= [-426, 0, -65])
+$(IMG_DIR)/dropout_junction.png: $(ASSEMBLY_STL) render_stl.py | $(IMG_DIR)
+	$(BLENDER) -b -P render_stl.py -- $< $@ dropout
+
+# =============================================================================
 # Utility targets
 # =============================================================================
 clean:
-	rm -rf $(STL_DIR)
+	rm -rf $(STL_DIR) $(IMG_DIR)
 
 list:
 	@echo "=== Metal Components ($(words $(METAL_STL)) parts) ==="
@@ -149,4 +183,4 @@ list:
 	@echo "=== Assembly (use 'make assembly') ==="
 	@echo "  $(ASSEMBLY_STL)"
 
-.PHONY: all clean list assembly
+.PHONY: all clean list assembly render
