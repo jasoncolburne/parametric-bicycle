@@ -92,14 +92,13 @@ module frame_assembly() {
     // --- SEAT STAYS ---
     // Connect from st_top area to dropout area
     // Keep at ss_spread for structural rigidity (no convergence with chainstay)
-    // Seat tube junction socket starts at Z=5, tube inserts 12.5mm with bolt holes aligned
-    // Socket at Z=5, bolt at Z=7.5, tube bolt at 12.5mm from tube start
-    // Tube offset = -5mm so tube starts at Z=-5, bolt at Z=7.5
+    // Tube starts at socket entrance (Z=5mm), inserts 25mm into socket
+    // Tube bolt at 12.5mm from start aligns with junction bolt at Z=17.5 (socket center)
     color(color_plastic)
         for (side = [-1, 1])
             orient_to(st_top + [0, side * ss_spread, st_seat_stay_z],
                       dropout + [0, side * ss_spread, dropout_seat_stay_z])
-                translate([0, 0, -5])
+                translate([0, 0, 5])
                     for (i = [0:seat_stay_sections-1])
                         translate([0, 0, i * seat_stay_section_length])
                             seat_stay_section(i);

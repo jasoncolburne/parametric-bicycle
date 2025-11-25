@@ -59,20 +59,46 @@ module seat_tube_junction() {
 
     difference() {
         union() {
-            // Hull the main collar with the seat stay lugs for integrated structure
-            hull() {
-                // Main body around seat tube (seat collar)
-                cylinder(h = stj_height, d = seat_tube_od + 16);
+            // First create the hulled main body without the collar cylinders
+            difference() {
+                hull() {
+                    // Main body around seat tube (seat collar)
+                    cylinder(h = stj_height, d = seat_tube_od + 16);
 
-                // Seat stay lugs
+                    // Seat stay lugs
+                    for (side = [-1, 1]) {
+                        translate([ss_local_x, side * ss_spread, ss_local_z])
+                            sphere(r = seat_stay_od/2 + 10);
+                    }
+                }
+
+                // Subtract collar cylinders from hull to make room for socketed collars
                 for (side = [-1, 1]) {
-                    translate([ss_local_x, side * ss_spread, ss_local_z])
-                        sphere(r = seat_stay_od/2 + 8);
+                    ss_world_start = st_top + [0, side * ss_spread, st_seat_stay_z];
+                    ss_world_end = dropout + [0, side * ss_spread, dropout_seat_stay_z];
+
+                    ss_start_offset = ss_world_start - junction_origin;
+                    ss_local_start = [
+                        ss_start_offset[0] * cos(_az) - ss_start_offset[2] * sin(_az),
+                        ss_start_offset[1],
+                        ss_start_offset[0] * sin(_az) + ss_start_offset[2] * cos(_az)
+                    ];
+
+                    ss_end_offset = ss_world_end - junction_origin;
+                    ss_local_end = [
+                        ss_end_offset[0] * cos(_az) - ss_end_offset[2] * sin(_az),
+                        ss_end_offset[1],
+                        ss_end_offset[0] * sin(_az) + ss_end_offset[2] * cos(_az)
+                    ];
+
+                    // Subtract same volume as collar sleeve (35mm)
+                    orient_to(ss_local_start, ss_local_end)
+                        translate([0, 0, 5])
+                            cylinder(h = 35, d = seat_stay_od + 16);
                 }
             }
 
-            // Collar cylinders to cap seat stay sockets
-            // Use same coordinate transformation as sockets
+            // Now add back collar cylinders with sockets pre-cut
             for (side = [-1, 1]) {
                 ss_world_start = st_top + [0, side * ss_spread, st_seat_stay_z];
                 ss_world_end = dropout + [0, side * ss_spread, dropout_seat_stay_z];
@@ -91,10 +117,18 @@ module seat_tube_junction() {
                     ss_end_offset[0] * sin(_az) + ss_end_offset[2] * cos(_az)
                 ];
 
-                // Cylinder along seat stay axis extending toward dropout
-                // Provides socket material so tube doesn't need to penetrate deep into junction
-                orient_to(ss_local_start, ss_local_end)
-                    cylinder(h = junction_socket_depth + 10, d = seat_stay_od + 16);
+                // Collar with socket passing through entire length
+                difference() {
+                    // Collar sleeve - 35mm tall starting at Z=5
+                    orient_to(ss_local_start, ss_local_end)
+                        translate([0, 0, 5])
+                            cylinder(h = 35, d = seat_stay_od + 16);
+
+                    // Socket hole - starts before sleeve and extends beyond to ensure complete penetration
+                    orient_to(ss_local_start, ss_local_end)
+                        translate([0, 0, 4])
+                            cylinder(h = 37, d = seat_stay_od + socket_clearance);
+                }
             }
 
             // Pinch bolt sleeve - connects the two counterbore surfaces
@@ -121,14 +155,12 @@ module seat_tube_junction() {
         translate([0, 0, 35])
             cylinder(h = stj_height - 35 + 10, d = seat_tube_id);
 
-        // Seat stay sockets
+        // Seat stay bolt holes in collar section
+        // Position holes at center of socket: Z=5+25/2 = Z=17.5
         for (side = [-1, 1]) {
-            // World positions of seat stay endpoints
             ss_world_start = st_top + [0, side * ss_spread, st_seat_stay_z];
             ss_world_end = dropout + [0, side * ss_spread, dropout_seat_stay_z];
 
-            // Transform both endpoints to local coordinates using _az and junction_origin from above
-            // Transform ss_world_start to local
             ss_start_offset = ss_world_start - junction_origin;
             ss_local_start = [
                 ss_start_offset[0] * cos(_az) - ss_start_offset[2] * sin(_az),
@@ -136,7 +168,6 @@ module seat_tube_junction() {
                 ss_start_offset[0] * sin(_az) + ss_start_offset[2] * cos(_az)
             ];
 
-            // Transform ss_world_end to local
             ss_end_offset = ss_world_end - junction_origin;
             ss_local_end = [
                 ss_end_offset[0] * cos(_az) - ss_end_offset[2] * sin(_az),
@@ -144,20 +175,8 @@ module seat_tube_junction() {
                 ss_end_offset[0] * sin(_az) + ss_end_offset[2] * cos(_az)
             ];
 
-            // Socket in collar - tube enters from dropout end
-            // Standard depth: starts at Z=5, extends junction_socket_depth (25mm to Z=30)
             orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, 5])
-                    cylinder(h = junction_socket_depth, d = seat_stay_od + socket_clearance);
-
-            // Bolt holes in collar section
-            // Position holes at [0, 180] to match tube holes
-            // Socket starts at Z=5, extends to Z=30 (5 + 25 standard depth)
-            // Tube starts at ss_local_start with -5mm offset, so tube Z=0 at ss_local_start
-            // Tube bolt at 12.5mm from tube start = Z=12.5 relative to ss_local_start = Z=7.5 in junction coords
-            // So junction bolt should be at Z=7.5 to align
-            orient_to(ss_local_start, ss_local_end)
-                translate([0, 0, 7.5])
+                translate([0, 0, 17.5])
                     for (angle = [0, 180])
                         rotate([0, 0, angle])
                             rotate([90, 0, 0])
