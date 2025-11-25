@@ -246,6 +246,13 @@ sleeve_length = 60;                  // Total sleeve length (2x overlap)
 // Bolt hole cutting length (must exceed max tube OD)
 bolt_hole_length = 75;
 
+// M6 socket head cap screw specifications
+m6_socket_head_diameter = 10;         // Socket head cap diameter
+m6_socket_head_height = 6;            // Socket head cap height
+m6_tap_drill = 5.0;                   // Tap drill diameter for M6 x 1.0 in aluminum
+m6_counterbore_depth = 7;             // Counterbore depth (6mm head + 1mm clearance)
+m6_thread_depth = 12;                 // Threaded hole depth (2x bolt diameter)
+
 // =============================================================================
 // MANUFACTURING TOLERANCES
 // =============================================================================
