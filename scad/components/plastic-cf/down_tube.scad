@@ -6,16 +6,22 @@
 include <../../config.scad>
 
 module down_tube_section(section_num) {
-    difference() {
-        // Outer tube - straight cylinder
-        cylinder(h = down_tube_section_length, d = down_tube_od);
+    // Mounting rail parameters
+    rail_diameter = 4;           // Diameter of mounting rail cylinders (smaller)
+    rail_separation = 12;        // Distance between rail centers (closer together)
+    rail_offset = down_tube_od/2 - 1; // Distance from tube center (closer to surface)
 
-        // Inner bore - extends beyond ends
-        translate([0, 0, -epsilon])
-            cylinder(h = down_tube_section_length + 2*epsilon,
-                     d = down_tube_od - 2 * tube_wall_thickness);
+    union() {
+        // Main cylindrical tube
+        difference() {
+            cylinder(h = down_tube_section_length, d = down_tube_od);
 
-        // Junction bolt holes at tube ends (for through-bolts in junction sockets)
+            // Inner bore - extends beyond ends
+            translate([0, 0, -epsilon])
+                cylinder(h = down_tube_section_length + 2*epsilon,
+                         d = down_tube_od - 2 * tube_wall_thickness);
+
+            // Junction bolt holes at tube ends (for through-bolts in junction sockets)
         // First section: holes at start for head tube lug
         if (section_num == 0) {
             for (angle = [0, 180])
@@ -52,10 +58,25 @@ module down_tube_section(section_num) {
                             cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
+        }
+
+        // Battery mounting rails - only on middle section (section 1)
+        // Rails positioned at bottom of tube (negative Z when oriented in assembly)
+        if (section_num == 1) {
+            // Left mounting rail (bottom-left)
+            rotate([0, 0, -90])
+                translate([-rail_separation/2, -rail_offset, 0])
+                    cylinder(h = down_tube_section_length, d = rail_diameter);
+
+            // Right mounting rail (bottom-right)
+            rotate([0, 0, -90])
+                translate([rail_separation/2, -rail_offset, 0])
+                    cylinder(h = down_tube_section_length, d = rail_diameter);
+        }
     }
 }
 
 // Render section (set via -D render_section=N)
-render_section = 0;  // Default for preview
+render_section = 1;  // Default for preview
 
 down_tube_section(render_section);

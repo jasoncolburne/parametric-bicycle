@@ -269,7 +269,7 @@ socket_clearance = 0.3;
 // DISPLAY COLORS (for assembly visualization)
 // =============================================================================
 color_metal = "silver";
-color_plastic = "black";
+color_plastic = "darkgray";
 
 // =============================================================================
 // COMMON CONSTANTS
