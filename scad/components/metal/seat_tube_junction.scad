@@ -149,32 +149,31 @@ module seat_tube_junction() {
         translate([0, 0, -10])
             cylinder(h = 45, d = seat_tube_od + socket_clearance);
 
-        // Seat tube bolt holes with counterbores and threaded mounting
-        // Design: M6 socket head cap screws insert from front (positive Y)
+        // Seat tube bolt hole with counterbore and threaded mounting
+        // Design: M6 socket head cap screw inserts from front (positive Y)
         //   - Front: Deeper counterbore (10mm) for 10mm socket head
         //   - Middle: 6.5mm clearance hole for M6 bolt shaft
         //   - Back: 12mm threaded hole (5.0mm tap drill)
         // Bolt is 3mm from inner bore edge, measure from there
         translate([0, 0, 22.5])
-            for (side = [-1, 1]) {
-                translate([0, side * ((seat_tube_od + socket_clearance)/2 + 3), 0])
-                    rotate([90, 0, 0]) {
-                        // Deeper counterbore for socket head cap screw (front side, positive Y)
-                        translate([0, 0, -25])
-                            cylinder(h = 10, d = m6_socket_head_diameter);
+            translate([0, (seat_tube_od + socket_clearance)/2 + 3, 0])
+                rotate([90, 0, 0]) {
+                    // Deeper counterbore for socket head cap screw (outside)
+                    translate([0, 0, -25])
+                        cylinder(h = 10, d = m6_socket_head_diameter);
 
-                        // Clearance hole for bolt shaft (middle section)
-                        translate([0, 0, -25 + 10])
-                            cylinder(h = 50 - 10 - m6_thread_depth,
-                                     d = joint_bolt_diameter + 0.5);
+                    // Clearance hole for bolt shaft (from counterbore end through cavity)
+                    // Needs to reach through cavity to opposite side
+                    translate([0, 0, -15])
+                        cylinder(h = 30,
+                                 d = joint_bolt_diameter + 0.5);
+                }
 
-                        // Tap drill hole for M6 threads (back side, negative Y)
-                        // Starts from inner bore edge (at 3mm from bolt center)
-                        // Extends 12mm toward hull exterior
-                        translate([0, 0, -3])
-                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
-                    }
-            }
+        // Tap hole from opposite side (starts 5mm inside cavity, drills outward)
+        translate([0, 0, 22.5])
+            translate([0, -((seat_tube_od + socket_clearance)/2 + 3 - 5), 0])
+                rotate([90, 0, 0])
+                    cylinder(h = m6_thread_depth + 5, d = m6_tap_drill);
 
         // Seat post bore (smaller, for seatpost at top)
         // Starts where seat tube ends and extends upward through hull
@@ -208,23 +207,23 @@ module seat_tube_junction() {
 
             orient_to(ss_local_start, ss_local_end)
                 translate([0, 0, 17.5])
-                    for (angle = [0, 180])
-                        rotate([0, 0, angle]) {
-                            rotate([90, 0, 0]) {
-                                // Counterbore for socket head cap screw (outer side)
-                                translate([0, 0, -seat_stay_od/2 - 8])
-                                    cylinder(h = m6_counterbore_depth, d = m6_socket_head_diameter);
+                    rotate([side * 90, 0, 0]) {
+                        // Counterbore for socket head cap screw (outer side)
+                        translate([0, 0, -seat_stay_od/2 - 8])
+                            cylinder(h = m6_counterbore_depth, d = m6_socket_head_diameter);
 
-                                // Clearance hole for bolt shaft (middle section)
-                                translate([0, 0, -seat_stay_od/2 - 8 + m6_counterbore_depth])
-                                    cylinder(h = seat_stay_od + 16 - m6_counterbore_depth - m6_thread_depth,
-                                             d = joint_bolt_diameter + 0.5);
+                        // Clearance hole for bolt shaft (from counterbore end, short)
+                        translate([0, 0, -seat_stay_od/2 - 8 + m6_counterbore_depth])
+                            cylinder(h = 5,
+                                     d = joint_bolt_diameter + 0.5);
+                    }
 
-                                // Tap drill hole for M6 threads (inner side)
-                                translate([0, 0, seat_stay_od/2 + 8 - m6_thread_depth])
-                                    cylinder(h = m6_thread_depth, d = m6_tap_drill);
-                            }
-                        }
+            // Tap hole from opposite side (starts inside cavity, drills outward)
+            orient_to(ss_local_start, ss_local_end)
+                translate([0, 0, 17.5])
+                    rotate([side * 90, 0, 0])
+                        translate([0, 0, seat_stay_od/2 - 2])
+                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
         }
 
         // Seat collar pinch slot - cuts through body but not all the way in Y
