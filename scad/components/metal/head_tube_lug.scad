@@ -7,34 +7,38 @@ include <../../config.scad>
 
 // Lug dimensions
 lug_height = 50;             // Height along head tube
-lug_extension = 50;          // How far it extends for down tube socket (needs to be longer)
+lug_extension = 75;          // How far it extends for down tube socket
 socket_depth = 25;           // How deep down tube inserts
 wall_thickness = 4;          // Wall thickness around tubes
 
 module head_tube_lug() {
-    // This lug is positioned along the head tube axis
-    // It's placed with: orient_to(ht_bottom, ht_top)
-    // So its local Z axis points along the head tube direction (upward)
+    // This lug is positioned along the head tube axis at ht_bottom
+    // Orient_to aligns local Z axis with head tube direction
+    // The downtube socket needs to angle downward/backward to meet bb_down_tube
 
-    // Down tube connects at ht_down_tube and goes to bb_down_tube
-    // In world coords: from ht_down_tube to bb_down_tube
+    // In the lug's local coordinate system:
+    // - Z axis points along head tube (toward ht_top)
+    // - Lug starts at Z=0 (ht_bottom)
+    // - ht_down_tube is at local Z = 30mm
+    // - Downtube needs to reach bb_down_tube from there
 
-    // Calculate down tube direction relative to head tube axis
-    dt_dir = bb_down_tube - ht_down_tube;
-    ht_dir = ht_top - ht_bottom;
+    // We need the angle in the local XZ plane
+    // Calculate the downtube vector in local coordinates after the orient_to transform
 
-    // Angle between down tube and head tube
-    dot_product = dt_dir[0]*ht_dir[0] + dt_dir[2]*ht_dir[2];
-    dt_angle = acos(dot_product / (norm(dt_dir) * norm(ht_dir)));
+    // The downtube goes from ht_down_tube to bb_down_tube in global space
+    // After orient_to transform, we need to calculate the angle differently
+
+    // Simpler approach: use the head tube angle and geometry to calculate dt_angle
+    // dt_angle is the angle the downtube socket makes with the head tube axis
+    dt_angle = 180 - head_tube_angle - seat_tube_angle;  // Geometric relationship
 
     // Pinch bolt boss dimensions
     boss_length = 18;  // Increased by 50%
-    boss_diameter = 12;  // Diameter of boss cylinders
+    boss_diameter = 9.5;  // Reduced diameter of boss cylinders
     boss_offset = 1;  // Move bosses outward from cavity for more wall thickness
     tap_hole_diameter = 4.2;  // M5 tap drill size
     clearance_hole_diameter = 5.5;  // M5 clearance
-    counterbore_diameter = 9.5;  // M5 socket head
-    counterbore_depth = 2.5;  // Counterbore depth
+    bolt_head_clearance = 9.5;  // Clearance for M5 socket head (no raised rim)
 
     // Stepped bore dimensions
     seat_height = 10;  // Height from bottom to seating step (below lower pinch bolt)
@@ -46,10 +50,18 @@ module head_tube_lug() {
             // Main collar around head tube
             cylinder(h = lug_height, d = head_tube_od + 2*wall_thickness);
 
-            // Extension for down tube socket (solid)
+            // Extension for down tube socket (solid) - thicker walls for tap depth
             translate([0, 0, lug_height/2])
                 rotate([0, dt_angle, 0])
-                    cylinder(h = lug_extension, d = down_tube_od + 2*wall_thickness);
+                    cylinder(h = lug_extension, d = down_tube_od + 2*6);  // 6mm wall thickness
+
+            // Sphere for tap hole material at outer hull
+            translate([0, 0, lug_height/2])
+                rotate([0, dt_angle, 0])
+                    translate([0, 0, lug_extension - socket_depth/2])
+                        rotate([90, 0, 0])
+                            translate([0, 0, (down_tube_od + 2*6)/2])
+                                sphere(r = 8);
 
             // Pinch bolt bosses - cylindrical material for bolt mounting with spherical cap
             for (z = [lug_height * 0.25, lug_height * 0.75]) {
@@ -76,26 +88,30 @@ module head_tube_lug() {
         translate([0, 0, seat_height])
             cylinder(h = lug_height - seat_height + epsilon, d = head_tube_od + socket_clearance - 4);
 
-        // Down tube socket bore (starts at beginning of extension, goes through to end)
+        // Down tube socket bore (only as deep as needed for tube insertion)
         translate([0, 0, lug_height/2])
             rotate([0, dt_angle, 0])
-                translate([0, 0, -epsilon])
-                    cylinder(h = lug_extension + 2*epsilon, d = down_tube_od + socket_clearance);
+                translate([0, 0, lug_extension - socket_depth])
+                    cylinder(h = socket_depth + epsilon, d = down_tube_od + socket_clearance);
 
-        // Down tube bolt holes with counterbores
+        // Down tube bolt holes - one tapped side, one counterbored side
         translate([0, 0, lug_height/2])
             rotate([0, dt_angle, 0])
                 translate([0, 0, lug_extension - socket_depth/2])
-                    for (angle = [0, 180])
-                        rotate([0, 0, angle])
-                            rotate([90, 0, 0]) {
-                                // Clearance hole for M5 bolt
-                                cylinder(h = down_tube_od + 20, d = joint_bolt_diameter + 0.5, center = true);
+                    rotate([90, 0, 0]) {
+                        // Tap hole - starts 2mm inside socket bore, extends outward
+                        tap_start = (down_tube_od + socket_clearance)/2 - 2;
+                        translate([0, 0, tap_start])
+                            cylinder(h = m6_thread_depth, d = m6_tap_drill, center = false);
 
-                                // Counterbore for M5 socket head cap screw (9.5mm dia, 2.5mm deep to preserve 1.5mm contact surface)
-                                translate([0, 0, -(down_tube_od/2 + wall_thickness)])
-                                    cylinder(h = 2.5, d = 9.5, center = false);
-                            }
+                        // Clearance hole - from opposite side through to tap
+                        translate([0, 0, -(down_tube_od/2 + 6)])
+                            cylinder(h = down_tube_od/2 + 6 - tap_start, d = joint_bolt_diameter + 0.5, center = false);
+
+                        // Counterbore for M5 socket head cap screw
+                        translate([0, 0, -(down_tube_od/2 + 6)])
+                            cylinder(h = 2.5, d = 9.5, center = false);
+                    }
 
         // Pinch bolt slot (to clamp on head tube) - 2mm wide slot on FRONT (180° from downtube)
         // Slot must cut through the wall and bosses
@@ -104,7 +120,7 @@ module head_tube_lug() {
         translate([slot_x, -1, -epsilon])
             cube([slot_width, 2, lug_height + 2*epsilon]);
 
-        // Pinch bolt holes - tap hole on one end, clearance + counterbore on other
+        // Pinch bolt holes - tap hole on one end, clearance on other (no raised rim)
         for (z = [lug_height * 0.25, lug_height * 0.75]) {
             bolt_x = -(head_tube_od/2 + wall_thickness/2) - boss_offset;  // Moved outward to match bosses
 
@@ -114,18 +130,16 @@ module head_tube_lug() {
                     translate([0, 0, -boss_length/2])
                         cylinder(h = boss_length/2 - 1, d = tap_hole_diameter, center = false);
 
-                    // Clearance hole on +Z end - drills from center to end
+                    // Clearance hole - drills through from center to +Z end and beyond
                     translate([0, 0, 1])
-                        cylinder(h = boss_length/2 - 1, d = clearance_hole_diameter, center = false);
-
-                    // Counterbore on +Z end
-                    translate([0, 0, boss_length/2 - counterbore_depth])
-                        cylinder(h = counterbore_depth + epsilon, d = counterbore_diameter, center = false);
-
-                    // Access cut for counterbore - extends outward from +Z end
-                    translate([0, 0, boss_length/2])
-                        cylinder(h = 20, d = counterbore_diameter, center = false);
+                        cylinder(h = boss_length/2 + 20, d = clearance_hole_diameter, center = false);
                 }
+
+            // Separate cut from union to provide bolt head clearance (cuts through collar)
+            translate([bolt_x, 0, z])
+                rotate([90, 0, 0])
+                    translate([0, 0, boss_length/2])
+                        cylinder(h = 20, d = bolt_head_clearance, center = false);
         }
     }
 }
