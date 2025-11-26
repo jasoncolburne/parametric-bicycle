@@ -30,23 +30,26 @@ Alternatives:
 
 ### Battery
 
-**52V 14Ah (728Wh)** - shark pack style, downtube mounted
-- Dimensions: ~365×85×65mm
-- Weight: ~3.2kg
-- Range: 45-75km depending on assist level and hills
-- Higher voltage = better hill performance and efficiency
-- Connector: Compatible with TSDZ2 (requires 52V controller)
-- **Mounting:** Water bottle cage style (74mm spacing) - uses rivnuts embedded in downtube
+**Varstrom 52V 20Ah (1040Wh)** - downtube shark pack
+- Dimensions: 368×95×125mm
+- Weight: ~5.0kg
+- Capacity: 1040Wh (extended range)
+- Power: Compatible with 50W-1500W motors (30A max continuous discharge)
+- Voltage: 52V (better hill performance and efficiency)
+- Connector: XT60 Female discharge connector, 5-pin battery base
+- **Mounting:** Standard water bottle cage mounting (74mm spacing) - uses rivnuts embedded in downtube
+- **Included:** Mounting bracket, battery lock, charger, BMS
+- Quick release design for easy charging
 - See [Battery & Water Bottle Mounting Documentation](../docs/battery_water_bottle_mounting.md)
 
 Alternatives:
-- 52V 17.5Ah (910Wh) - more range for longer hilly rides
-- 48V 14Ah (672Wh) - standard voltage option
+- Varstrom 52V 17.5Ah (910Wh) - slightly lighter
+- Varstrom 48V 20Ah (960Wh) - standard voltage option
 
 **Battery Mounting Hardware (included in frame):**
-- 6× M5 aluminum rivnuts in downtube section 1
-- 2× CNC-milled aluminum battery brackets (74mm spacing)
-- 4× Velcro straps for battery retention
+- 2× M5 aluminum rivnuts in downtube section 1 (bottom, -90°) for battery
+- 2× M5 aluminum rivnuts in downtube section 1 (top, +90°) for water bottle cage
+- Battery mounting bracket included with Varstrom battery
 
 ---
 

@@ -20,7 +20,7 @@ CONFIG := $(SCAD_DIR)/config.scad
 # Metal Components (single parts)
 # =============================================================================
 METAL_SINGLE := dropout bb_shell head_tube seat_collar motor_mount \
-                battery_mount brake_mount cable_guide gusset_plate rack_mount \
+                brake_mount cable_guide gusset_plate rack_mount \
                 down_tube_gusset bb_junction head_tube_lug seat_tube_junction
 
 METAL_SINGLE_STL := $(patsubst %,$(STL_DIR)/metal/%.stl,$(METAL_SINGLE))
@@ -40,9 +40,7 @@ METAL_STL := $(METAL_SINGLE_STL) $(DROPOUT_JUNCTION_STL) $(SLEEVE_STL)
 # =============================================================================
 # Accessories (optional components)
 # =============================================================================
-ACCESSORIES := water_bottle_cage
-
-ACCESSORIES_STL := $(patsubst %,$(STL_DIR)/accessories/%.stl,$(ACCESSORIES))
+# None currently - battery and water bottle mount directly to rivnuts
 
 # =============================================================================
 # Plastic-CF Components (sectioned tubes)
@@ -74,7 +72,7 @@ ASSEMBLY_STL := $(STL_DIR)/assembly.stl
 # =============================================================================
 # All targets
 # =============================================================================
-ALL_STL := $(METAL_STL) $(PLASTIC_STL) $(ACCESSORIES_STL)
+ALL_STL := $(METAL_STL) $(PLASTIC_STL)
 
 # Default target
 all: $(ALL_STL)
@@ -93,9 +91,6 @@ $(STL_DIR)/metal:
 	mkdir -p $@
 
 $(STL_DIR)/plastic-cf:
-	mkdir -p $@
-
-$(STL_DIR)/accessories:
 	mkdir -p $@
 
 # =============================================================================
@@ -145,12 +140,6 @@ $(STL_DIR)/plastic-cf/seat_stay_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_stay.sc
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # =============================================================================
-# Accessories component rules
-# =============================================================================
-$(STL_DIR)/accessories/%.stl: $(COMPONENTS_DIR)/accessories/%.scad $(CONFIG) | $(STL_DIR)/accessories
-	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
-
-# =============================================================================
 # Assembly rendering for visual verification
 # =============================================================================
 IMG_DIR := img
@@ -193,9 +182,6 @@ list:
 	@echo ""
 	@echo "=== Plastic-CF Components ($(words $(PLASTIC_STL)) parts) ==="
 	@echo "$(PLASTIC_STL)" | tr ' ' '\n' | sed 's|^|  |'
-	@echo ""
-	@echo "=== Accessories ($(words $(ACCESSORIES_STL)) parts) ==="
-	@echo "$(ACCESSORIES_STL)" | tr ' ' '\n' | sed 's|^|  |'
 	@echo ""
 	@echo "Total: $(words $(ALL_STL)) STL files"
 	@echo ""

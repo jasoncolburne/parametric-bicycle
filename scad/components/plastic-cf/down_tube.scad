@@ -67,18 +67,18 @@ module down_tube_section(section_num) {
         // Rivnut mounting holes for battery and water bottle (section 1 only)
         // Subtracted at the end to avoid mirroring issues
         if (section_num == 1) {
-            // Battery mount - 2 pairs of rivnuts (4 holes total)
+            // Battery mount - 1 pair of rivnuts (2 holes total, 74mm spacing)
             // Positioned at -90° (bottom of tube)
-            for (z_pos = [30, 104, 130, 204]) {
+            for (z_pos = [80, 154]) {
                 rotate([0, 0, -90])
                     translate([0, 0, z_pos])
                         rotate([90, 0, 0])
                             cylinder(h = down_tube_od/2 + epsilon, d = rivnut_hole_diameter, center = false);
             }
 
-            // Water bottle mount - 1 pair of rivnuts (2 holes total)
-            // Positioned at +90° (top of tube)
-            for (z_pos = [70, 144]) {
+            // Water bottle mount - 1 pair of rivnuts (2 holes total, 74mm spacing)
+            // Positioned at +90° (top of tube) - same Z positions as battery
+            for (z_pos = [80, 154]) {
                 rotate([0, 0, 90])
                     translate([0, 0, z_pos])
                         rotate([90, 0, 0])

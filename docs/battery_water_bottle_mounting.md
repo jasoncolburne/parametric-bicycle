@@ -3,10 +3,12 @@
 ## Overview
 
 The downtube section 1 features an integrated rivnut-based mounting system for:
-- **Shark pack battery** (52V 14Ah, ~365×85×65mm)
+- **Varstrom 52V 20Ah shark pack battery** (368×95×125mm, 1040Wh)
 - **Standard water bottle cage** (74mm spacing)
 
 Both can be mounted simultaneously on the same downtube section.
+
+The Varstrom battery includes its own mounting bracket that bolts directly to the frame's rivnuts - no custom bracket fabrication required.
 
 ## Design Philosophy
 
@@ -43,18 +45,13 @@ Both can be mounted simultaneously on the same downtube section.
 
 ### Rivnut Positions
 
-**Battery Mount (4 rivnuts at -90° rotation - bottom of tube):**
-1. **Front bracket pair:**
-   - Lower hole: Z = 30mm from section start
-   - Upper hole: Z = 104mm (30 + 74mm spacing)
-
-2. **Rear bracket pair:**
-   - Lower hole: Z = 130mm from section start
-   - Upper hole: Z = 204mm (130 + 74mm spacing)
+**Battery Mount (2 rivnuts at -90° rotation - bottom of tube):**
+- Lower hole: Z = 80mm from section start
+- Upper hole: Z = 154mm (80 + 74mm spacing)
 
 **Water Bottle Mount (2 rivnuts at +90° rotation - top of tube):**
-- Lower hole: Z = 70mm from section start
-- Upper hole: Z = 144mm (70 + 74mm spacing)
+- Lower hole: Z = 80mm from section start (same as battery)
+- Upper hole: Z = 154mm (80 + 74mm spacing, same as battery)
 
 ### Rotation Reference
 - **-90°** = Bottom of tube (battery side)
@@ -92,25 +89,20 @@ Both can be mounted simultaneously on the same downtube section.
 - Back side: Expanded rivnut body gripping inside wall
 - Nothing protrudes from tube surface
 
-### 4. Install Battery Brackets
-**Quantity:** 2 brackets (front and rear)
-
-**Fabrication options:**
-- **Option 1:** CNC mill from 6mm 6061-T6 aluminum on NestWorks C500
-- **Option 2:** 3D print from PA + continuous carbon fiber on FibreSeeker 3
+### 4. Install Battery Mounting Bracket
+**Included with Varstrom battery**
 
 **Mounting:**
-1. Position bracket against downtube bottom
-2. Align bracket holes with rivnuts (74mm spacing)
-3. Insert M5 × 12mm socket head cap screws
-4. Tighten to secure bracket to tube
-5. Repeat for second bracket
+1. Position Varstrom mounting bracket against downtube bottom
+2. Align bracket holes with rivnuts at -90° position (74mm spacing)
+3. Insert M5 × 12mm socket head cap screws (typically included with battery)
+4. Tighten to secure bracket to tube (3-4 Nm torque)
 
 **Battery attachment:**
-- Use velcro straps through bracket strap slots
-- 2 straps per bracket (4 total for battery)
-- Wrap straps around battery and through slots
-- Secures ~3.2kg battery with distributed load
+- Slide battery into Varstrom mounting bracket
+- Lock battery in place with included battery lock
+- Quick release design allows easy removal for charging
+- Secures 5.0kg battery with distributed load across two mounting points
 
 ### 5. Install Water Bottle Cage
 **Standard water bottle cage** (any brand with 74mm mounting)
@@ -128,12 +120,12 @@ Both can be mounted simultaneously on the same downtube section.
 ### Per Frame
 
 **Rivnuts:**
-- M5 × 0.8mm aluminum blind rivnuts: 6 pcs
+- M5 × 0.8mm aluminum blind rivnuts: 4 pcs (2 for battery, 2 for water bottle)
 
 **Battery Mount Hardware:**
-- M5 × 12mm socket head cap screws: 4 pcs (for 2 brackets)
-- Battery mount brackets (aluminum or CF): 2 pcs
-- Velcro battery straps (25mm wide × 300mm): 4 pcs
+- Varstrom 52V 20Ah battery: 1 pc
+- Varstrom battery mounting bracket: 1 pc (included with battery)
+- M5 × 12mm socket head cap screws: 2 pcs (typically included with battery)
 
 **Water Bottle Hardware:**
 - M5 × 12mm socket head cap screws: 2 pcs (often included with cage)
@@ -148,21 +140,17 @@ Both can be mounted simultaneously on the same downtube section.
 ### Modified Components
 - `scad/config.scad` - Added rivnut parameters
 - `scad/components/plastic-cf/down_tube.scad` - Rivnut holes in section 1
-- `scad/components/metal/battery_mount.scad` - Redesigned bracket for rivnuts
-
-### New Components
-- `scad/components/accessories/water_bottle_cage.scad` - Optional adapter plate
 
 ### Makefile
-- Added `ACCESSORIES` section for water bottle cage
-- Total component count: 30 STL files (20 metal + 9 plastic-cf + 1 accessory)
+- Removed battery_mount from metal components
+- Total component count: 28 STL files (19 metal + 9 plastic-cf)
 
 ## Compatibility
 
 ### Battery Compatibility
-- **Primary:** Shark pack style batteries with water bottle cage mounting
-- **Alternatives:** Any battery with 74mm mounting hole spacing
-- **Weight capacity:** Designed for ~3.2kg battery + safety margin
+- **Primary:** Varstrom 52V 20Ah (1040Wh) - includes mounting bracket
+- **Alternatives:** Any shark pack battery with standard 74mm water bottle cage mounting
+- **Weight capacity:** Rivnuts rated for 5kg+ battery weight with safety margin
 
 ### Water Bottle Compatibility
 - **Standard cages:** Any cage with 74mm vertical hole spacing
@@ -177,9 +165,9 @@ Both can be mounted simultaneously on the same downtube section.
 - If rivnut spins: remove and re-install new rivnut
 
 ### Battery Security
-- Check velcro straps before each ride
-- Replace straps if fraying or losing grip
-- Ensure battery is secure and doesn't rattle
+- Check battery lock is engaged before each ride
+- Ensure battery doesn't rattle in mounting bracket
+- Verify mounting bracket bolts are tight
 
 ### Water Bottle Cage
 - Check bolt tightness monthly
@@ -197,8 +185,8 @@ Both can be mounted simultaneously on the same downtube section.
 - **Fix:** Remove rivnut, install new one, use torque wrench (3-4 Nm for M5)
 
 ### Battery Rattles
-- **Cause:** Loose straps or bracket bolts
-- **Fix:** Tighten bracket bolts, replace/tighten straps
+- **Cause:** Loose battery lock or bracket bolts
+- **Fix:** Ensure battery lock is fully engaged, tighten bracket mounting bolts
 
 ### Cage Loosens
 - **Cause:** Vibration backing out bolts
