@@ -63,19 +63,20 @@ module dropout_junction(side = 1) {
         //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
         orient_to(cs_end, cs_start)
             translate([0, 0, junction_socket_depth/2 - 25])
-                rotate([90, 0, 180]) {
+                rotate([90, 0, side > 0 ? 180 : 0]) {
                     // Counterbore for socket head cap screw (rotated 180° from seat stay)
                     // Starts 3mm from tube bore, extends outward to clear entire hull
-                    translate([0, 0, side * ((chainstay_od + socket_clearance)/2 + 3)])
+                    translate([0, 0, (chainstay_od + socket_clearance)/2 + 3])
                         cylinder(h = 30, d = m6_socket_head_diameter);
 
                     // Clearance hole for bolt shaft (from inside socket cavity to counterbore)
-                    translate([0, 0, side * ((chainstay_od + socket_clearance)/2 - 5)])
+                    translate([0, 0, (chainstay_od + socket_clearance)/2 - 5])
                         cylinder(h = 8, d = joint_bolt_diameter + 0.5);
 
-                    // Tap drill hole for M6 threads (starts exactly at tube bore edge)
-                    translate([0, 0, -side * (chainstay_od + socket_clearance)/2])
-                        cylinder(h = 8, d = m6_tap_drill);
+                    // Tap drill hole for M6 threads (starts 2mm inside socket, drills outward)
+                    translate([0, 0, -((chainstay_od + socket_clearance)/2 - 2)])
+                        rotate([180, 0, 0])
+                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
                 }
 
         // Seat stay socket - tube enters from seat tube junction end
@@ -91,19 +92,20 @@ module dropout_junction(side = 1) {
         //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
         orient_to(ss_end, ss_start)
             translate([0, 0, junction_socket_depth/2 - 25])
-                rotate([90, 0, 0]) {
+                rotate([90, 0, side > 0 ? 0 : 180]) {
                     // Counterbore for socket head cap screw (same side as chainstay)
                     // Starts 3mm from tube bore, extends outward to clear entire hull
-                    translate([0, 0, side * ((seat_stay_od + socket_clearance)/2 + 3)])
+                    translate([0, 0, (seat_stay_od + socket_clearance)/2 + 3])
                         cylinder(h = 30, d = m6_socket_head_diameter);
 
                     // Clearance hole for bolt shaft (from inside socket cavity to counterbore)
-                    translate([0, 0, side * ((seat_stay_od + socket_clearance)/2 - 5)])
+                    translate([0, 0, (seat_stay_od + socket_clearance)/2 - 5])
                         cylinder(h = 8, d = joint_bolt_diameter + 0.5);
 
-                    // Tap drill hole for M6 threads (starts exactly at tube bore edge)
-                    translate([0, 0, -side * (seat_stay_od + socket_clearance)/2])
-                        cylinder(h = 8, d = m6_tap_drill);
+                    // Tap drill hole for M6 threads (starts 2mm inside socket, drills outward)
+                    translate([0, 0, -((seat_stay_od + socket_clearance)/2 - 2)])
+                        rotate([180, 0, 0])
+                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
                 }
 
         // Axle clearance
