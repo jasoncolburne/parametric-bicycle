@@ -134,10 +134,6 @@ module head_tube_lug() {
 
 // Wrapper to reposition origin at downtube socket cap center
 module head_tube_lug_repositioned() {
-    // Move origin from base of lug to center of downtube socket cap
-    // Socket opening is at: lug_height/2 + lug_extension along head tube Z-axis
-    // Then angled at dt_angle
-    // First translate back along Z, then rotate so angled socket points along +Z
     translate([0, 0, lug_extension-socket_depth])
         rotate([0, 180-dt_angle, 0])
             translate([0, 0, -junction_socket_depth])

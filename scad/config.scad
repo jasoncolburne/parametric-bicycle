@@ -21,7 +21,7 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 frame_size = 520;                    // Seat tube center-to-top
 top_tube_effective = 545;
 head_tube_length = 140;
-head_tube_angle = 70;
+head_tube_angle = 73;
 seat_tube_angle = 72;
 chainstay_length = 460;
 bb_drop = 77.5;                      // 27.5" wheel radius (342mm) - target BB height (264.5mm) = 77.5mm
@@ -175,8 +175,8 @@ _bb_down_tube_offset = [25, 0, bb_shell_od/2 + down_tube_od/2 + 3];
 _bb_seat_tube_offset = [-15, 0, bb_shell_od/2 + seat_tube_od/2 + 3];
 _bb_chainstay_z = -(bb_shell_od/2 + chainstay_od/2 + 3);
 
-// Head tube connection (down tube connects 30mm up from bottom)
-_ht_down_tube = [ht_bottom_x, 0, ht_bottom_z + 30];
+// Head tube connection (down tube connects 42mm up from bottom)
+_ht_down_tube = [ht_bottom_x, 0, ht_bottom_z + 42];
 
 // Seat tube top and seat stay connection
 _st_top = [st_top_x, 0, st_top_z];
@@ -198,8 +198,9 @@ junction_socket_depth = 25;  // How deep tubes insert into junction sockets
 // Tubes extend from connection point to connection point, PLUS socket depth at each end
 
 // Down tube: from ht_down_tube to bb_down_tube + socket depth at each end
+// BB end: junction_socket_depth (25mm), Head tube end: socket_depth from lug (40mm)
 _down_tube_core = norm(_bb_down_tube_offset - _ht_down_tube);
-down_tube_length = _down_tube_core + 2 * junction_socket_depth;
+down_tube_length = _down_tube_core + junction_socket_depth + 40;  // 25mm BB + 40mm lug
 
 // Seat tube: from bb_seat_tube to st_top
 // BB end: full socket depth insertion (25mm)

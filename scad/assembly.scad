@@ -38,18 +38,26 @@ module frame_assembly() {
     color(color_metal, alpha_metal)
         bb_junction();
 
-    // --- HEAD TUBE ---
-    color(color_metal, alpha_metal)
-        orient_to(ht_bottom, ht_top)
-            head_tube();
+    // --- DOWN TUBE ---
+    // Positioned from BB junction, extending toward head tube
+    // Offset by -socket_depth (40mm) at head tube end to insert into lug
+    // and -junction_socket_depth (25mm) at BB end to insert into BB junction
+    // Total extension at head end: 40mm into lug socket
+    color(color_plastic)
+        orient_to(bb_down_tube, ht_down_tube)
+            translate([0, 0, -junction_socket_depth])
+                for (i = [0:down_tube_sections-1])
+                    translate([0, 0, i * down_tube_section_length])
+                        down_tube_section(i);
 
     // --- HEAD TUBE LUG ---
-    // Position 5mm down from ht_bottom for better alignment
+    // Using repositioned lug with origin at downtube socket cap
+    // Simply orient along downtube and position at downtube end
     color(color_metal, alpha_metal)
-        translate(ht_bottom + [0, 0, -5])
-            orient_to([0,0,0], ht_top - ht_bottom)
-                rotate([0, 0, 180])
-                    head_tube_lug();
+        orient_to(bb_down_tube, ht_down_tube)
+            rotate([0, 0, 180])
+                translate([0, 0, down_tube_length-junction_socket_depth])
+                    head_tube_lug_repositioned();
 
     // --- SEAT TUBE ---
     // Connects from bb_seat_tube to st_top
@@ -68,16 +76,6 @@ module frame_assembly() {
         orient_to(bb_seat_tube, st_top)
             translate([0, 0, norm(st_top - bb_seat_tube) - 60])
                 seat_tube_junction();
-
-    // --- DOWN TUBE ---
-    // Connects from ht_down_tube to bb_down_tube
-    // Offset by -socket_depth so tube starts inside head tube lug socket
-    color(color_plastic)
-        orient_to(ht_down_tube, bb_down_tube)
-            translate([0, 0, -junction_socket_depth])
-                for (i = [0:down_tube_sections-1])
-                    translate([0, 0, i * down_tube_section_length])
-                        down_tube_section(i);
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area
