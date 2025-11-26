@@ -1,26 +1,42 @@
 // Battery Mount Bracket
-// CNC milled component for NestWorks C500
+// CNC milled aluminum or 3D printed carbon fiber reinforced for NestWorks C500 / FibreSeeker 3
+// Bolts directly to rivnuts in downtube via M5 bolts
+// Provides cradle for shark pack battery
 
 include <../../config.scad>
 
-module battery_mount() {
+module battery_mount_bracket() {
+    bracket_width = 90;
+    bracket_height = 80;
+    bracket_thickness = 6;
+
     difference() {
-        // Main bracket body
-        cube([battery_mount_width, battery_mount_height, battery_mount_thickness]);
+        union() {
+            // Main mounting plate
+            translate([-bracket_width/2, 0, 0])
+                cube([bracket_width, bracket_thickness, bracket_height]);
 
-        // Frame mounting hole (M5)
-        translate([battery_mount_width/2, 10, -epsilon])
-            cylinder(h = battery_mount_thickness + 2*epsilon, d = 5.5);
-
-        // Battery rail slot
-        translate([10, battery_mount_height - 10, -epsilon])
-            hull() {
-                cylinder(h = battery_mount_thickness + 2*epsilon, d = 6);
-                translate([battery_mount_width - 20, 0, 0])
-                    cylinder(h = battery_mount_thickness + 2*epsilon, d = 6);
+            // Support ribs for structural rigidity
+            for (x = [-30, 0, 30]) {
+                translate([x - 2, bracket_thickness, 0])
+                    cube([4, 15, bracket_height]);
             }
+        }
+
+        // Mounting holes to downtube rivnuts (74mm spacing)
+        for (z_offset = [10, 10 + bottle_cage_spacing]) {
+            translate([0, -epsilon, z_offset])
+                rotate([-90, 0, 0])
+                    cylinder(h = bracket_thickness + 2*epsilon, d = 5.5);  // M5 clearance
+        }
+
+        // Battery strap slots (for velcro straps to secure battery)
+        for (z = [25, 55]) {
+            translate([-bracket_width/2 - epsilon, bracket_thickness + 5, z])
+                cube([bracket_width + 2*epsilon, 6, 8]);
+        }
     }
 }
 
 // Render for preview
-battery_mount();
+battery_mount_bracket();

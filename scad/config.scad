@@ -90,7 +90,19 @@ motor_mount_height = 100;
 battery_mount_thickness = 6;
 battery_mount_width = 60;
 battery_mount_height = 40;
-battery_mount_quantity = 4;
+battery_mount_quantity = 2;          // 2 bracket pairs for battery
+
+// =============================================================================
+// WATER BOTTLE CAGE MOUNT
+// =============================================================================
+bottle_cage_spacing = 74;            // Standard water bottle cage spacing
+bottle_cage_bolt = 5;                // M5 bolts
+rivnut_hole_diameter = 9;            // 9mm hole for M5 rivnut installation
+rivnut_body_length = 10;             // Rivnut body length for clearance
+
+// Battery mount positions (on downtube section 1)
+battery_mount_pairs = 2;             // 2 pairs of mounting points
+battery_mount_pair_spacing = 100;    // Distance between pairs along tube
 
 // =============================================================================
 // BRAKE MOUNT (Post Mount)

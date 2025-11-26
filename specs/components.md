@@ -30,16 +30,23 @@ Alternatives:
 
 ### Battery
 
-**52V 14Ah (728Wh)** - downtube mounted (mid-range)
+**52V 14Ah (728Wh)** - shark pack style, downtube mounted
 - Dimensions: ~365×85×65mm
 - Weight: ~3.2kg
 - Range: 45-75km depending on assist level and hills
 - Higher voltage = better hill performance and efficiency
 - Connector: Compatible with TSDZ2 (requires 52V controller)
+- **Mounting:** Water bottle cage style (74mm spacing) - uses rivnuts embedded in downtube
+- See [Battery & Water Bottle Mounting Documentation](../docs/battery_water_bottle_mounting.md)
 
 Alternatives:
 - 52V 17.5Ah (910Wh) - more range for longer hilly rides
 - 48V 14Ah (672Wh) - standard voltage option
+
+**Battery Mounting Hardware (included in frame):**
+- 6× M5 aluminum rivnuts in downtube section 1
+- 2× CNC-milled aluminum battery brackets (74mm spacing)
+- 4× Velcro straps for battery retention
 
 ---
 

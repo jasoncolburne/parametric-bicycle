@@ -38,6 +38,13 @@ SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
 METAL_STL := $(METAL_SINGLE_STL) $(DROPOUT_JUNCTION_STL) $(SLEEVE_STL)
 
 # =============================================================================
+# Accessories (optional components)
+# =============================================================================
+ACCESSORIES := water_bottle_cage
+
+ACCESSORIES_STL := $(patsubst %,$(STL_DIR)/accessories/%.stl,$(ACCESSORIES))
+
+# =============================================================================
 # Plastic-CF Components (sectioned tubes)
 # =============================================================================
 # Down tube: 3 sections
@@ -67,7 +74,7 @@ ASSEMBLY_STL := $(STL_DIR)/assembly.stl
 # =============================================================================
 # All targets
 # =============================================================================
-ALL_STL := $(METAL_STL) $(PLASTIC_STL)
+ALL_STL := $(METAL_STL) $(PLASTIC_STL) $(ACCESSORIES_STL)
 
 # Default target
 all: $(ALL_STL)
@@ -86,6 +93,9 @@ $(STL_DIR)/metal:
 	mkdir -p $@
 
 $(STL_DIR)/plastic-cf:
+	mkdir -p $@
+
+$(STL_DIR)/accessories:
 	mkdir -p $@
 
 # =============================================================================
@@ -135,6 +145,12 @@ $(STL_DIR)/plastic-cf/seat_stay_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_stay.sc
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # =============================================================================
+# Accessories component rules
+# =============================================================================
+$(STL_DIR)/accessories/%.stl: $(COMPONENTS_DIR)/accessories/%.scad $(CONFIG) | $(STL_DIR)/accessories
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ $<
+
+# =============================================================================
 # Assembly rendering for visual verification
 # =============================================================================
 IMG_DIR := img
@@ -177,6 +193,9 @@ list:
 	@echo ""
 	@echo "=== Plastic-CF Components ($(words $(PLASTIC_STL)) parts) ==="
 	@echo "$(PLASTIC_STL)" | tr ' ' '\n' | sed 's|^|  |'
+	@echo ""
+	@echo "=== Accessories ($(words $(ACCESSORIES_STL)) parts) ==="
+	@echo "$(ACCESSORIES_STL)" | tr ' ' '\n' | sed 's|^|  |'
 	@echo ""
 	@echo "Total: $(words $(ALL_STL)) STL files"
 	@echo ""

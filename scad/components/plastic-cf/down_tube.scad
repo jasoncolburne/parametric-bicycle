@@ -12,85 +12,78 @@ module down_tube_section(section_num) {
     rail_offset = down_tube_od/2 - 1; // Distance from tube center (closer to surface)
     rail_length = down_tube_section_length; // Full section length
 
-    union() {
-        // Main cylindrical tube
-        difference() {
-            cylinder(h = down_tube_section_length, d = down_tube_od);
+    difference() {
+        union() {
+            // Main cylindrical tube
+            difference() {
+                // Base cylindrical tube
+                cylinder(h = down_tube_section_length, d = down_tube_od);
 
-            // Inner bore - extends beyond ends
-            translate([0, 0, -epsilon])
-                cylinder(h = down_tube_section_length + 2*epsilon,
-                         d = down_tube_od - 2 * tube_wall_thickness);
+                // Inner bore - extends beyond ends (circular throughout)
+                translate([0, 0, -epsilon])
+                    cylinder(h = down_tube_section_length + 2*epsilon,
+                             d = down_tube_od - 2 * tube_wall_thickness);
 
-            // Junction bolt holes at tube ends (for through-bolts in junction sockets)
-        // First section: holes at start for head tube lug
-        if (section_num == 0) {
-            for (angle = [0, 180])
-                rotate([0, 0, angle])
-                    translate([0, 0, junction_socket_depth/2])
-                        rotate([90, 0, 0])
-                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
-        }
+                // Junction bolt holes at tube ends (for through-bolts in junction sockets)
+            // First section: holes at start for head tube lug
+            if (section_num == 0) {
+                for (angle = [0, 180])
+                    rotate([0, 0, angle])
+                        translate([0, 0, junction_socket_depth/2])
+                            rotate([90, 0, 0])
+                                cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+            }
 
-        // Last section: holes at end for BB junction
-        if (section_num == down_tube_sections - 1) {
-            for (angle = [0, 180])
-                rotate([0, 0, angle])
-                    translate([0, 0, down_tube_section_length - junction_socket_depth/2])
-                        rotate([90, 0, 0])
-                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
-        }
+            // Last section: holes at end for BB junction
+            if (section_num == down_tube_sections - 1) {
+                for (angle = [0, 180])
+                    rotate([0, 0, angle])
+                        translate([0, 0, down_tube_section_length - junction_socket_depth/2])
+                            rotate([90, 0, 0])
+                                cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+            }
 
-        // Bolt holes for sleeve joint/gusset between sections
-        if (section_num > 0) {
-            for (i = [0:joint_bolt_count-1]) {
-                rotate([0, 0, i * 180])  // Opposite sides
-                    translate([0, 0, joint_overlap/2 + (i % 2) * 8])
-                        rotate([90, 0, 0])
-                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+            // Bolt holes for sleeve joint/gusset between sections
+            if (section_num > 0) {
+                for (i = [0:joint_bolt_count-1]) {
+                    rotate([0, 0, i * 180])  // Opposite sides
+                        translate([0, 0, joint_overlap/2 + (i % 2) * 8])
+                            rotate([90, 0, 0])
+                                cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+                }
+            }
+
+            if (section_num < down_tube_sections - 1) {
+                for (i = [0:joint_bolt_count-1]) {
+                    rotate([0, 0, i * 180])  // Opposite sides
+                        translate([0, 0, down_tube_section_length - joint_overlap/2 - (i % 2) * 8])
+                            rotate([90, 0, 0])
+                                cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+                }
+            }
             }
         }
 
-        if (section_num < down_tube_sections - 1) {
-            for (i = [0:joint_bolt_count-1]) {
-                rotate([0, 0, i * 180])  // Opposite sides
-                    translate([0, 0, down_tube_section_length - joint_overlap/2 - (i % 2) * 8])
-                        rotate([90, 0, 0])
-                            cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
-            }
-        }
-        }
-
-        // Battery mounting rails - only on middle section (section 1)
-        // Rails positioned at bottom of tube (negative Z when oriented in assembly)
+        // Rivnut mounting holes for battery and water bottle (section 1 only)
+        // Subtracted at the end to avoid mirroring issues
         if (section_num == 1) {
-            // Left mounting rail (bottom-left)
-            rotate([0, 0, -90])
-                translate([-rail_separation/2, -rail_offset, 0]) {
-                    // Cylinder connecting the spheres
-                    translate([0, 0, rail_diameter/2])
-                        cylinder(h = rail_length - rail_diameter, d = rail_diameter);
-                    // Round bottom end (inset by radius)
-                    translate([0, 0, rail_diameter/2])
-                        sphere(d = rail_diameter);
-                    // Round top end (inset by radius)
-                    translate([0, 0, rail_length - rail_diameter/2])
-                        sphere(d = rail_diameter);
-                }
+            // Battery mount - 2 pairs of rivnuts (4 holes total)
+            // Positioned at -90° (bottom of tube)
+            for (z_pos = [30, 104, 130, 204]) {
+                rotate([0, 0, -90])
+                    translate([0, 0, z_pos])
+                        rotate([90, 0, 0])
+                            cylinder(h = down_tube_od/2 + epsilon, d = rivnut_hole_diameter, center = false);
+            }
 
-            // Right mounting rail (bottom-right)
-            rotate([0, 0, -90])
-                translate([rail_separation/2, -rail_offset, 0]) {
-                    // Cylinder connecting the spheres
-                    translate([0, 0, rail_diameter/2])
-                        cylinder(h = rail_length - rail_diameter, d = rail_diameter);
-                    // Round bottom end (inset by radius)
-                    translate([0, 0, rail_diameter/2])
-                        sphere(d = rail_diameter);
-                    // Round top end (inset by radius)
-                    translate([0, 0, rail_length - rail_diameter/2])
-                        sphere(d = rail_diameter);
-                }
+            // Water bottle mount - 1 pair of rivnuts (2 holes total)
+            // Positioned at +90° (top of tube)
+            for (z_pos = [70, 144]) {
+                rotate([0, 0, 90])
+                    translate([0, 0, z_pos])
+                        rotate([90, 0, 0])
+                            cylinder(h = down_tube_od/2 + epsilon, d = rivnut_hole_diameter, center = false);
+            }
         }
     }
 }
