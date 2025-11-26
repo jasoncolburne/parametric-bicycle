@@ -20,7 +20,6 @@ use <components/metal/bb_junction.scad>
 use <components/metal/head_tube_lug.scad>
 use <components/metal/seat_tube_junction.scad>
 use <components/metal/dropout_junction.scad>
-use <components/metal/battery_mount.scad>
 use <components/metal/motor_mount.scad>
 use <components/metal/brake_mount.scad>
 use <components/metal/cable_guide.scad>
@@ -118,8 +117,8 @@ module frame_assembly() {
             translate([0, 0, -bb_shell_width/2])
                 bb_shell();
 
-    // NOTE: Additional components (dropouts, motor mount, battery mounts,
-    // brake mount, cable guides, rack mounts) removed for geometry verification.
+    // NOTE: Additional components (dropouts, motor mount, brake mount,
+    // cable guides, rack mounts) removed for geometry verification.
     // Re-add once core frame geometry is confirmed correct.
 }
 

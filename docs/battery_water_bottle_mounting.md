@@ -14,9 +14,9 @@ The Varstrom battery includes its own mounting bracket that bolts directly to th
 
 ### Rivnut Integration
 - **M5 aluminum blind rivnuts** embedded directly in carbon fiber tube wall
-- **6 total rivnuts** in downtube section 1
+- **4 total rivnuts** in downtube section 1
 - Standard water bottle cage mounting pattern (74mm vertical spacing)
-- Compatible with any standard cage or battery mount
+- Compatible with any standard cage or Varstrom battery bracket
 
 ### Advantages
 - ✅ Industry standard (works with all water bottle cages and shark pack batteries)
