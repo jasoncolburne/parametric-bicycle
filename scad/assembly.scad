@@ -44,9 +44,12 @@ module frame_assembly() {
             head_tube();
 
     // --- HEAD TUBE LUG ---
+    // Position 5mm down from ht_bottom for better alignment
     color(color_metal, alpha_metal)
-        orient_to(ht_bottom, ht_top)
-            head_tube_lug();
+        translate(ht_bottom + [0, 0, -5])
+            orient_to([0,0,0], ht_top - ht_bottom)
+                rotate([0, 0, 180])
+                    head_tube_lug();
 
     // --- SEAT TUBE ---
     // Connects from bb_seat_tube to st_top
