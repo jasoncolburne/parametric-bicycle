@@ -7,30 +7,17 @@ include <../../config.scad>
 
 // Lug dimensions
 lug_height = 50;             // Height along head tube
-lug_extension = 75;          // How far it extends for down tube socket
-socket_depth = 25;           // How deep down tube inserts
+lug_extension = 90;          // How far it extends for down tube socket
+socket_depth = 40;           // How deep down tube inserts
 wall_thickness = 4;          // Wall thickness around tubes
 
+// Calculate the actual angle between head tube and downtube in 3D space (global)
+ht_vec_global = ht_top - ht_bottom;
+dt_vec_global = bb_down_tube - ht_down_tube;
+dot_global = ht_vec_global[0]*dt_vec_global[0] + ht_vec_global[1]*dt_vec_global[1] + ht_vec_global[2]*dt_vec_global[2];
+dt_angle = acos(dot_global / (norm(ht_vec_global) * norm(dt_vec_global)));
+
 module head_tube_lug() {
-    // This lug is positioned along the head tube axis at ht_bottom
-    // Orient_to aligns local Z axis with head tube direction
-    // The downtube socket needs to angle downward/backward to meet bb_down_tube
-
-    // In the lug's local coordinate system:
-    // - Z axis points along head tube (toward ht_top)
-    // - Lug starts at Z=0 (ht_bottom)
-    // - ht_down_tube is at local Z = 30mm
-    // - Downtube needs to reach bb_down_tube from there
-
-    // We need the angle in the local XZ plane
-    // Calculate the downtube vector in local coordinates after the orient_to transform
-
-    // The downtube goes from ht_down_tube to bb_down_tube in global space
-    // After orient_to transform, we need to calculate the angle differently
-
-    // Simpler approach: use the head tube angle and geometry to calculate dt_angle
-    // dt_angle is the angle the downtube socket makes with the head tube axis
-    dt_angle = 180 - head_tube_angle - seat_tube_angle;  // Geometric relationship
 
     // Pinch bolt boss dimensions
     boss_length = 18;  // Increased by 50%
@@ -38,6 +25,7 @@ module head_tube_lug() {
     boss_offset = 1;  // Move bosses outward from cavity for more wall thickness
     tap_hole_diameter = 4.2;  // M5 tap drill size
     clearance_hole_diameter = 5.5;  // M5 clearance
+    through_hole_position = socket_depth - junction_socket_depth/2;
     bolt_head_clearance = 9.5;  // Clearance for M5 socket head (no raised rim)
 
     // Stepped bore dimensions
@@ -58,7 +46,7 @@ module head_tube_lug() {
             // Sphere for tap hole material at outer hull
             translate([0, 0, lug_height/2])
                 rotate([0, dt_angle, 0])
-                    translate([0, 0, lug_extension - socket_depth/2])
+                    translate([0, 0, lug_extension - socket_depth + junction_socket_depth/2])
                         rotate([90, 0, 0])
                             translate([0, 0, (down_tube_od + 2*6)/2])
                                 sphere(r = 8);
@@ -97,7 +85,7 @@ module head_tube_lug() {
         // Down tube bolt holes - one tapped side, one counterbored side
         translate([0, 0, lug_height/2])
             rotate([0, dt_angle, 0])
-                translate([0, 0, lug_extension - socket_depth/2])
+                translate([0, 0, lug_extension - socket_depth + junction_socket_depth/2])
                     rotate([90, 0, 0]) {
                         // Tap hole - starts 2mm inside socket bore, extends outward
                         tap_start = (down_tube_od + socket_clearance)/2 - 2;
@@ -144,5 +132,17 @@ module head_tube_lug() {
     }
 }
 
+// Wrapper to reposition origin at downtube socket cap center
+module head_tube_lug_repositioned() {
+    // Move origin from base of lug to center of downtube socket cap
+    // Socket opening is at: lug_height/2 + lug_extension along head tube Z-axis
+    // Then angled at dt_angle
+    // First translate back along Z, then rotate so angled socket points along +Z
+    translate([0, 0, lug_extension-socket_depth])
+        rotate([0, 180-dt_angle, 0])
+            translate([0, 0, -junction_socket_depth])
+                head_tube_lug();
+}
+
 // Render for preview
-head_tube_lug();
+head_tube_lug_repositioned();
