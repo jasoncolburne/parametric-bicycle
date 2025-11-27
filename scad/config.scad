@@ -29,6 +29,7 @@ wheelbase = 1078;                    // Recalculated from dropout position (was 
 standover_height = 450;              // Step-through
 stack = 633;                         // Increased for larger front wheel (was 620)
 reach = 370;
+tt_angle = 108; // top tube angle with respect to head tube
 
 // =============================================================================
 // TUBE DIAMETERS

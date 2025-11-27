@@ -20,12 +20,6 @@ dt_vec_global = bb_down_tube - ht_down_tube;
 dot_global = ht_vec_global[0]*dt_vec_global[0] + ht_vec_global[1]*dt_vec_global[1] + ht_vec_global[2]*dt_vec_global[2];
 dt_angle = acos(dot_global / (norm(ht_vec_global) * norm(dt_vec_global)));
 
-// Calculate the top tube direction (from lug top to seat tube mid-junction)
-tt_vec_global = st_top_tube - ht_top_tube;
-// Calculate angle relative to head tube axis
-tt_dot_global = ht_vec_global[0]*tt_vec_global[0] + ht_vec_global[1]*tt_vec_global[1] + ht_vec_global[2]*tt_vec_global[2];
-tt_angle = acos(tt_dot_global / (norm(ht_vec_global) * norm(tt_vec_global)));
-
 module head_tube_lug() {
     // Stepped bore dimensions
     seat_height = 60;  // Height from bottom to seating step (100mm - 40mm clamping = 60mm)
