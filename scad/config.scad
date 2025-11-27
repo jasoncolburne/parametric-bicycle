@@ -332,6 +332,40 @@ dropout_seat_stay_z = _dropout_seat_stay_z;
 cs_spread = _cs_spread;
 ss_spread = _ss_spread;
 
+// Lug dimensions
+lug_height = 100;             // Height along head tube (increased for top tube clearance)
+
+extension_thickness = 6;     // Wall thickness around extensions
+wall_thickness = 4;
+
+extension_depth = 90;          // How far it extends for down tube socket
+extension_socket_depth = 40;           // How deep down tube inserts
+
+_ht_vec = ht_top - ht_bottom;
+_dt_vec = bb_down_tube - ht_down_tube;
+_ht_dot_dt = _ht_vec[0]*_dt_vec[0] + _ht_vec[1]*_dt_vec[1] + _ht_vec[2]*_dt_vec[2];
+dt_angle = acos(_ht_dot_dt / (norm(_ht_vec) * norm(_dt_vec)));
+
+// Calculate the actual angle between head tube and downtube in 3D space (global)
+ht_unit = (_ht_vec) / norm(_ht_vec);
+dt_unit = (bb_down_tube - ht_down_tube) / norm(bb_down_tube - ht_down_tube);
+
+
+// Head tube dimensions
+lug_outer_radius = head_tube_od / 2 + wall_thickness;
+
+// Top tube dimensions
+top_extension_outer_radius = top_tube_od / 2 + extension_thickness;
+top_extension_angle = 180 - tt_angle;
+top_extension_offset = sin(top_extension_angle)*top_extension_outer_radius - (lug_outer_radius - cos(top_extension_angle)*top_extension_outer_radius)/tan(top_extension_angle);
+top_extension_translation = lug_height - top_extension_offset;
+
+// Down tube dimensions
+down_tube_extension_outer_radius = down_tube_od / 2 + extension_thickness;
+down_tube_extension_translation = 40;
+
+
+
 // =============================================================================
 // HELPER MODULE: Orient object from point A toward point B
 // =============================================================================
