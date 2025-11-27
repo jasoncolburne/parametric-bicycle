@@ -12,6 +12,7 @@ socket_depth = 40;           // How deep down tube inserts
 wall_thickness = 4;          // Wall thickness around tubes
 top_tube_od = 44;            // Top tube outer diameter
 top_tube_extension = 90;     // How far top tube socket extends
+extension_thickness = 6;     // Wall thickness around extensions
 
 // Calculate the actual angle between head tube and downtube in 3D space (global)
 ht_vec_global = ht_top - ht_bottom;
@@ -26,7 +27,6 @@ tt_dot_global = ht_vec_global[0]*tt_vec_global[0] + ht_vec_global[1]*tt_vec_glob
 tt_angle = acos(tt_dot_global / (norm(ht_vec_global) * norm(tt_vec_global)));
 
 module head_tube_lug() {
-
     // Stepped bore dimensions
     seat_height = 60;  // Height from bottom to seating step (100mm - 40mm clamping = 60mm)
     seat_diameter = head_tube_od + socket_clearance - 4;  // Smaller bore for seating
@@ -42,12 +42,20 @@ module head_tube_lug() {
     bolt_head_clearance = 9.5;  // Clearance for M5 socket head (no raised rim)
 
     // Head tube dimensions
-    lug_outer_radius = (head_tube_od + 2 * wall_thickness) / 2;
+    lug_outer_radius = head_tube_od / 2 + wall_thickness;
+    
+    echo("tt_angle=", tt_angle);
     
     // Top tube dimensions
-    top_extension_outer_radius = (top_tube_od + 12) / 2;
-    top_extension_translation = lug_height - (sin(tt_angle)*top_extension_outer_radius + sin(90-tt_angle) * lug_outer_radius);
+    top_extension_outer_radius = top_tube_od / 2 + extension_thickness;
+    top_extension_angle = 180 - tt_angle;
+    top_extension_offset = sin(top_extension_angle)*top_extension_outer_radius - (lug_outer_radius - cos(top_extension_angle)*top_extension_outer_radius)/tan(top_extension_angle);
+    top_extension_translation = lug_height - top_extension_offset;
 
+    // Down tube dimensions
+    down_tube_extension_outer_radius = down_tube_od / 2 + extension_thickness;
+    down_tube_extension_translation = 40;
+    
     difference() {
         // Build complete solid shape first
         union() {
@@ -55,18 +63,16 @@ module head_tube_lug() {
             cylinder(h = lug_height, r = lug_outer_radius);
 
             // Extension for down tube socket (solid) - thicker walls for tap depth
-            translate([0, 0, lug_height/2])
-                rotate([0, dt_angle, 0])
+            translate([0, 0, down_tube_extension_translation])
+                rotate([0, dt_angle, 0]) {
                     cylinder(h = lug_extension, d = down_tube_od + 2*6);  // 6mm wall thickness
 
-            // Sphere for tap hole material at outer hull
-            translate([0, 0, lug_height/2])
-                rotate([0, dt_angle, 0])
                     translate([0, 0, lug_extension - socket_depth + junction_socket_depth/2])
                         rotate([90, 0, 0])
                             translate([0, 0, (down_tube_od + 2*6)/2])
                                 sphere(r = 8);
-
+                    }
+                                
             // Pinch bolt boss - single boss in upper clamping section
             // Positioned at 75% height (45mm) in the clamping zone
             bolt_x = -(head_tube_od/2 + wall_thickness/2) - boss_offset;  // Moved outward
@@ -83,37 +89,33 @@ module head_tube_lug() {
             // Positioned so outer perimeter is flush with top (lug_height)
             // Socket points toward seat tube mid-junction at calculated tt_angle
             translate([0, 0, top_extension_translation])
-                rotate([0, tt_angle, 0])
-                    cylinder(h = top_tube_extension, d = top_tube_od + 12);  // 6mm walls
+                rotate([0, tt_angle, 0]) {
+                    cylinder(h = top_tube_extension, r = top_extension_outer_radius);  // 6mm walls
 
-            // Sphere for bolt hole material at top tube socket (at junction_socket_depth/2 from socket start)
-            translate([0, 0, top_extension_translation])
-                rotate([0, tt_angle, 0])
                     translate([socket_offset, 0, top_tube_extension - socket_depth + junction_socket_depth/2])
                         rotate([90, 0, 0])
                             translate([0, 0, (top_tube_od + 2*6)/2])
                                 sphere(r = 8);
+                    }
         }
 
         // Cut all holes through the solid
         // Head tube bore - two sections to create seating step
         // Lower section: larger diameter, extends below lug to clear downtube sleeve
-        translate([0, 0, -lug_height - epsilon])
+        translate([0, 0, -lug_height])
             cylinder(h = lug_height + seat_height + epsilon, d = head_tube_od + socket_clearance);
 
         // Upper section: smaller diameter, head tube seats on the step
         translate([0, 0, seat_height])
             cylinder(h = lug_height - seat_height + epsilon, d = head_tube_od + socket_clearance - 4);
 
-        // Down tube socket bore (only as deep as needed for tube insertion)
-        translate([0, 0, lug_height/2])
-            rotate([0, dt_angle, 0])
+        translate([0, 0, down_tube_extension_translation])
+            rotate([0, dt_angle, 0]) {
+                // Down tube socket bore (only as deep as needed for tube insertion)
                 translate([0, 0, lug_extension - socket_depth])
                     cylinder(h = socket_depth + epsilon, d = down_tube_od + socket_clearance);
 
-        // Down tube bolt holes - one tapped side, one counterbored side
-        translate([0, 0, lug_height/2])
-            rotate([0, dt_angle, 0])
+                // Down tube bolt holes - one tapped side, one counterbored side
                 translate([0, 0, lug_extension - socket_depth + junction_socket_depth/2])
                     rotate([90, 0, 0]) {
                         // Tap hole - starts 2mm inside socket bore, extends outward
@@ -129,6 +131,7 @@ module head_tube_lug() {
                         translate([0, 0, -(down_tube_od/2 + 6)])
                             cylinder(h = 2.5, d = 9.5, center = false);
                     }
+                }
 
         // Pinch bolt slot (to clamp on head tube) - 2mm wide slot on FRONT (180° from downtube)
         // Slot only cuts upper half (above shoulder) for clamping
