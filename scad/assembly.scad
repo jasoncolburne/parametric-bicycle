@@ -19,6 +19,7 @@ use <components/metal/tube_sleeve.scad>
 use <components/metal/bb_junction.scad>
 use <components/metal/head_tube_lug.scad>
 use <components/metal/seat_tube_junction.scad>
+use <components/metal/seat_tube_mid_junction.scad>
 use <components/metal/dropout_junction.scad>
 use <components/metal/motor_mount.scad>
 use <components/metal/brake_mount.scad>
@@ -26,6 +27,7 @@ use <components/metal/cable_guide.scad>
 use <components/metal/rack_mount.scad>
 use <components/plastic-cf/down_tube.scad>
 use <components/plastic-cf/seat_tube.scad>
+use <components/plastic-cf/top_tube.scad>
 use <components/plastic-cf/chainstay.scad>
 use <components/plastic-cf/seat_stay.scad>
 

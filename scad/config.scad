@@ -37,7 +37,7 @@ head_tube_id = 44;                   // 1-1/8" straight steerer
 head_tube_od = 49;
 seat_tube_id = 27.2;                 // Standard seatpost
 down_tube_od = 44;
-top_tube_od = 32;
+top_tube_od = 44;                    // Same as down tube for structural strength
 seat_stay_od = 16;
 chainstay_od = 22;
 
@@ -223,17 +223,28 @@ _ss_end = _dropout + [0, _ss_spread, _dropout_seat_stay_z];
 _seat_stay_core = norm(_ss_end - _ss_start);
 seat_stay_length = _seat_stay_core + junction_socket_depth/2 + junction_socket_depth;
 
+// Top tube: from head tube lug top to seat tube mid-junction (50% up seat tube)
+// Head tube lug top is at ht_down_tube + 90mm along head tube direction
+// Seat tube mid-junction is at 50% up seat tube from BB
+_seat_tube_mid_height = norm(_st_top - _bb_seat_tube_offset) * 0.5;
+_ht_lug_top = _ht_down_tube + [0, 0, 90];  // Lug is 90mm tall
+_st_mid = _bb_seat_tube_offset + (_st_top - _bb_seat_tube_offset) * 0.5;
+_top_tube_core = norm(_st_mid - _ht_lug_top);
+top_tube_length = _top_tube_core + 2 * junction_socket_depth;
+
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);
 seat_tube_sections = ceil(seat_tube_length / max_section_length);
 chainstay_sections = ceil(chainstay_actual_length / max_section_length);
 seat_stay_sections = ceil(seat_stay_length / max_section_length);
+top_tube_sections = ceil(top_tube_length / max_section_length);
 
 // --- DERIVED SECTION LENGTHS ---
 down_tube_section_length = down_tube_length / down_tube_sections;
 seat_tube_section_length = seat_tube_length / seat_tube_sections;
 chainstay_section_length = chainstay_actual_length / chainstay_sections;
 seat_stay_section_length = seat_stay_length / seat_stay_sections;
+top_tube_section_length = top_tube_length / top_tube_sections;
 
 // Down tube gusset angle (for step-through bend)
 down_tube_gusset_angle = 150;        // Angle between sections at gusset (degrees)
@@ -306,9 +317,11 @@ bb_chainstay_z = _bb_chainstay_z;
 
 // Tube connection points at head tube
 ht_down_tube = _ht_down_tube;
+ht_top_tube = _ht_lug_top;  // Top of head tube lug (for top tube connection)
 
-// Tube connection points at seat tube top
+// Tube connection points at seat tube
 st_seat_stay_z = _st_seat_stay_z;
+st_top_tube = _st_mid;  // Mid-height on seat tube (for top tube connection)
 
 // Tube connection points at dropout
 dropout_chainstay_z = _dropout_chainstay_z;

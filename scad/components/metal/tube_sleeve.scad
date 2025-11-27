@@ -46,6 +46,11 @@ module seat_stay_sleeve() {
     tube_sleeve(seat_stay_od);
 }
 
+// Example: Top tube sleeve (44mm OD)
+module top_tube_sleeve() {
+    tube_sleeve(top_tube_od);
+}
+
 // Render based on type (set via -D render_type="...")
 render_type = "down_tube";  // Default for preview
 
@@ -53,6 +58,8 @@ if (render_type == "down_tube") {
     down_tube_sleeve();
 } else if (render_type == "seat_tube") {
     seat_tube_sleeve();
+} else if (render_type == "top_tube") {
+    top_tube_sleeve();
 } else if (render_type == "chainstay") {
     chainstay_sleeve();
 } else if (render_type == "seat_stay") {

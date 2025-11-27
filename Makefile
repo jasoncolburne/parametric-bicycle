@@ -21,7 +21,8 @@ CONFIG := $(SCAD_DIR)/config.scad
 # =============================================================================
 METAL_SINGLE := dropout bb_shell head_tube seat_collar motor_mount \
                 brake_mount cable_guide gusset_plate rack_mount \
-                down_tube_gusset bb_junction head_tube_lug seat_tube_junction
+                down_tube_gusset bb_junction head_tube_lug seat_tube_junction \
+                seat_tube_mid_junction
 
 METAL_SINGLE_STL := $(patsubst %,$(STL_DIR)/metal/%.stl,$(METAL_SINGLE))
 
@@ -32,6 +33,7 @@ DROPOUT_JUNCTION_STL := $(STL_DIR)/metal/dropout_junction_left.stl \
 # Tube sleeves (for all straight tubes)
 SLEEVE_STL := $(STL_DIR)/metal/sleeve_down_tube.stl \
               $(STL_DIR)/metal/sleeve_seat_tube.stl \
+              $(STL_DIR)/metal/sleeve_top_tube.stl \
               $(STL_DIR)/metal/sleeve_chainstay.stl \
               $(STL_DIR)/metal/sleeve_seat_stay.stl
 
@@ -62,7 +64,12 @@ CHAINSTAY_STL := $(STL_DIR)/plastic-cf/chainstay_0.stl \
 SEAT_STAY_STL := $(STL_DIR)/plastic-cf/seat_stay_0.stl \
                  $(STL_DIR)/plastic-cf/seat_stay_1.stl
 
-PLASTIC_STL := $(DOWN_TUBE_STL) $(SEAT_TUBE_STL) $(CHAINSTAY_STL) $(SEAT_STAY_STL)
+# Top tube: variable sections (calculated in config.scad)
+# Will be 1-2 sections depending on length
+TOP_TUBE_STL := $(STL_DIR)/plastic-cf/top_tube_0.stl \
+                $(STL_DIR)/plastic-cf/top_tube_1.stl
+
+PLASTIC_STL := $(DOWN_TUBE_STL) $(SEAT_TUBE_STL) $(TOP_TUBE_STL) $(CHAINSTAY_STL) $(SEAT_STAY_STL)
 
 # =============================================================================
 # Assembly (complete frame)
@@ -120,6 +127,9 @@ $(STL_DIR)/metal/sleeve_chainstay.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad 
 $(STL_DIR)/metal/sleeve_seat_stay.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="seat_stay"' $<
 
+$(STL_DIR)/metal/sleeve_top_tube.stl: $(COMPONENTS_DIR)/metal/tube_sleeve.scad $(CONFIG) | $(STL_DIR)/metal
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_type="top_tube"' $<
+
 # =============================================================================
 # Plastic-CF component rules (sectioned)
 # =============================================================================
@@ -129,6 +139,10 @@ $(STL_DIR)/plastic-cf/down_tube_%.stl: $(COMPONENTS_DIR)/plastic-cf/down_tube.sc
 
 # Seat tube sections
 $(STL_DIR)/plastic-cf/seat_tube_%.stl: $(COMPONENTS_DIR)/plastic-cf/seat_tube.scad $(CONFIG) | $(STL_DIR)/plastic-cf
+	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
+
+# Top tube sections
+$(STL_DIR)/plastic-cf/top_tube_%.stl: $(COMPONENTS_DIR)/plastic-cf/top_tube.scad $(CONFIG) | $(STL_DIR)/plastic-cf
 	$(OPENSCAD) $(OPENSCAD_FLAGS) -o $@ -D 'render_section=$*' $<
 
 # Chainstay sections
