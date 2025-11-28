@@ -21,14 +21,14 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 frame_size = 520;                    // Seat tube center-to-top
 top_tube_effective = 545;
 head_tube_length = 140;
-head_tube_angle = 73;
+head_tube_angle = 70;
 seat_tube_angle = 72;
 chainstay_length = 460;
 bb_drop = 77.5;                      // 27.5" wheel radius (342mm) - target BB height (264.5mm) = 77.5mm
 wheelbase = 1078;                    // Recalculated from dropout position (was 1080)
 standover_height = 450;              // Step-through
 stack = 633;                         // Increased for larger front wheel (was 620)
-reach = 370;
+reach = 375;
 tt_angle = 108; // top tube angle with respect to head tube
 
 // =============================================================================
@@ -281,7 +281,7 @@ socket_clearance = 0.3;
 // DISPLAY COLORS (for assembly visualization)
 // =============================================================================
 color_metal = "silver";
-color_plastic = "darkgray";
+color_plastic = "white";
 
 // =============================================================================
 // COMMON CONSTANTS
@@ -380,12 +380,19 @@ _seat_tube_unit = (_st_top - _bb_seat_tube_offset) / norm(_st_top - _bb_seat_tub
 
 // Find intersection: lug_tt_socket_position + t*tt_unit = bb_seat_tube + s*seat_tube_unit
 // This is a line-line closest approach problem in 3D
-// For simplicity, project to find where top tube crosses seat tube Z height at 50%
-_st_mid_point = _bb_seat_tube_offset + (_st_top - _bb_seat_tube_offset) * 0.5;
-// Project from lug socket to this point, then back up by extension_depth - extension_socket_depth
-_tt_to_st_vec = _st_mid_point - lug_tt_socket_position;
-_tt_length_to_junction = norm(_tt_to_st_vec);
-seat_tube_mid_junction_position = lug_tt_socket_position + tt_unit * (_tt_length_to_junction - (extension_depth - extension_socket_depth));
+_st_vec = _st_top - _bb_seat_tube_offset;
+_st_unit = _st_vec / norm(_st_vec);
+_w0 = _bb_seat_tube_offset - lug_tt_socket_position;
+_a = _st_unit * _st_unit;  // = 1 (unit vector)
+_b = _st_unit * tt_unit;   // dot product
+_c = tt_unit * tt_unit;    // = 1 (unit vector)
+_d = _st_unit * _w0;       // dot product
+_e = tt_unit * _w0;        // dot product
+_t_intersection = (_b * _e - _c * _d) / (_a * _c - _b * _b);
+// Point on seat tube axis where top tube ray intersects
+_st_intersection_point = _bb_seat_tube_offset + _st_unit * _t_intersection;
+// Back up by extension offset along -tt_unit to place junction socket entrance
+seat_tube_mid_junction_position = _st_intersection_point - tt_unit * (extension_depth - extension_socket_depth);
 
 // Top tube length from socket to socket
 top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + extension_socket_depth;
