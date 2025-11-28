@@ -388,7 +388,7 @@ _tt_length_to_junction = norm(_tt_to_st_vec);
 seat_tube_mid_junction_position = lug_tt_socket_position + tt_unit * (_tt_length_to_junction - (extension_depth - extension_socket_depth));
 
 // Top tube length from socket to socket
-top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + extension_socket_depth + junction_socket_depth;
+top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + extension_socket_depth;
 
 // Top tube sections
 top_tube_sections = ceil(top_tube_length / max_section_length);

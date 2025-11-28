@@ -95,7 +95,7 @@ module frame_assembly() {
     color(color_metal, alpha_metal)
         orient_to(ht_top_tube, st_top_tube)
             translate([0, 0, top_tube_length - extension_socket_depth])
-                seat_tube_mid_junction_repositioned();
+                seat_tube_mid_junction();
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area
