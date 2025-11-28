@@ -228,7 +228,7 @@ seat_stay_length = _seat_stay_core + junction_socket_depth/2 + junction_socket_d
 
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);
-seat_tube_sections = ceil(seat_tube_length / max_section_length);
+seat_tube_sections = 3;  // Explicitly 3 sections to accommodate mid-junction
 chainstay_sections = ceil(chainstay_actual_length / max_section_length);
 seat_stay_sections = ceil(seat_stay_length / max_section_length);
 // top_tube_sections calculated later after top_tube_length is defined
@@ -403,6 +403,14 @@ stmj_socket_rotation_x = atan2(_tt_inv[1], sqrt(_tt_inv[0]*_tt_inv[0] + _tt_inv[
 // Export for assembly (after calculations)
 ht_top_tube = lug_tt_socket_position;  // Top tube socket position in lug
 st_top_tube = seat_tube_mid_junction_position;  // Seat tube mid-junction socket position
+
+// Seat tube mid-junction bolt positioning
+// Calculate global position of sleeve bolt, then project onto seat tube axis
+_st_mid_junction_bolt_global = seat_tube_mid_junction_position + tt_unit * (extension_depth - extension_socket_depth);
+_st_vec_for_projection = st_top - bb_seat_tube;
+_st_unit_for_projection = _st_vec_for_projection / norm(_st_vec_for_projection);
+_st_bolt_offset_vec = _st_mid_junction_bolt_global - bb_seat_tube;
+st_mid_junction_bolt_distance = _st_bolt_offset_vec * _st_unit_for_projection;  // Distance along seat tube from bb_seat_tube
 
 // Debug exports for visualization
 tt_step1 = _tt_step1;

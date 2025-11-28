@@ -18,11 +18,27 @@ Style: Commuter/Urban step-through (easy mount/dismount)
 - **Stack**: 620mm
 - **Reach**: 370mm
 
-### Step-Through Design
-- **Frame style**: Low-step / wave frame
-- **Down tube**: Two straight sections with angle at gusset (150°)
-- **Top tube**: Eliminated (replaced by reinforced down tube)
+### Frame Design
+- **Frame style**: Step-through (top tube connects at seat tube mid-height)
+- **Down tube**: Single straight tube from BB to head tube lug
+- **Top tube**: Connects head tube lug top extension to seat tube mid-junction (~50% height)
 - **Junction pieces**: CNC milled aluminum at all tube connections
+
+#### Top Tube and Mid-Junction Positioning
+The top tube connects the head tube lug (at the top extension socket) to a mid-junction on the seat tube. The positioning is calculated by tracing the frame path:
+
+1. Start at BB junction (`bb_seat_tube`)
+2. Follow down tube to head tube lug at calculated angle
+3. Move up the head tube lug to the top extension socket (`lug_tt_socket_position`)
+4. Project along top tube direction (`tt_unit`, rotated from head tube by `tt_angle = 108°`)
+5. Find intersection with seat tube at approximately 50% height
+
+The **seat tube mid-junction** sits on the seat tube with a through-bolt connecting the junction sleeve to the seat tube. Position determination:
+- Global position of mid-junction: `seat_tube_mid_junction_position`
+- Sleeve bolt position: `seat_tube_mid_junction_position + tt_unit * (extension_depth - extension_socket_depth)`
+- This position is projected onto the seat tube axis to find the exact height for the through-bolt hole
+
+The seat tube is split into **3 sections** to accommodate the mid-junction through-bolt hole in the middle section.
 
 ### Tube Diameters
 - **Head tube ID**: 44mm (1-1/8" straight steerer)
@@ -166,15 +182,29 @@ Dimensions per dropout:
   - Down tube socket at correct angle
   - Bolt holes for tube connection
 
-### Seat Tube Junction
+### Seat Tube Junction (Top)
 
 - **Material**: 6061-T6 aluminum
-- **Height**: 50mm
+- **Height**: 60mm
 - **Purpose**: Top of seat tube, receives both seat stays
 - **Features**:
   - Seat post bore
   - Seat stay sockets at calculated angles
   - Pinch clamp for seat adjustment
+
+### Seat Tube Mid-Junction
+
+- **Material**: 6061-T6 aluminum
+- **Height**: 50mm (sleeve)
+- **Purpose**: Connects top tube to seat tube at mid-height
+- **Features**:
+  - Extension socket for top tube (40mm deep socket)
+  - Sleeve around seat tube (rotated to align with seat tube angle)
+  - Through-bolt (M6) connecting sleeve to seat tube
+  - Spherical boss on tap side of bolts
+  - Counterbores on clearance side
+- **Position**: Calculated by tracing from BB → down tube → lug → top tube direction
+- **Assembly**: Top tube inserts into extension socket, sleeve through-bolts to seat tube section 1 (middle section)
 
 ### Dropout Junction (×2)
 
@@ -206,11 +236,25 @@ All tubes print standing on end for optimal layer orientation.
 
 ### Seat Tube
 
-- **Total length**: 520mm (frame size)
-- **Sections**: 3 × ~173mm
+- **Total length**: ~520mm (calculated from BB to top)
+- **Sections**: 3 (explicitly set to accommodate mid-junction)
 - **OD**: 34mm
-- **ID**: 27.2mm
+- **ID**: 27.2mm (seatpost clearance)
+- **Joint type**: Internal aluminum sleeves between sections
+- **Special feature**: Section 1 (middle) has through-bolt hole for seat tube mid-junction
+  - Hole position calculated by projecting mid-junction sleeve bolt position onto seat tube axis
+  - Accounts for tube starting offset (-junction_socket_depth from bb_seat_tube)
+
+### Top Tube
+
+- **Total length**: ~545mm (calculated from lug socket to mid-junction socket)
+- **Sections**: Calculated based on length / max_section_length
+- **OD**: 32mm
+- **Wall**: 2.5mm
 - **Joint type**: Internal aluminum sleeves
+- **Connections**:
+  - Head end: Inserts into lug top extension socket (40mm deep)
+  - Seat end: Inserts into mid-junction extension socket (40mm deep)
 
 ### Chainstays (pair)
 

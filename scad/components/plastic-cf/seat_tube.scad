@@ -54,6 +54,18 @@ module seat_tube_section(section_num) {
                             cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
             }
         }
+
+        // Middle section: through hole for seat tube mid-junction bolt
+        if (section_num == 1) {
+            // Use pre-calculated bolt position from config.scad
+            // st_mid_junction_bolt_distance is the distance along seat tube from bb_seat_tube
+            // Account for tube starting at -junction_socket_depth
+            hole_z = st_mid_junction_bolt_distance + junction_socket_depth - section_num * seat_tube_section_length;
+
+            translate([0, 0, hole_z])
+                rotate([90, 0, 0])
+                    cylinder(h = bolt_hole_length, d = joint_bolt_diameter + 0.5, center = true);
+        }
     }
 }
 
