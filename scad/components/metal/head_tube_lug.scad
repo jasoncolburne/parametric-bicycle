@@ -52,7 +52,7 @@ module head_tube_lug() {
             // Extension for top tube socket at top of lug
             // Positioned so outer perimeter is flush with top (lug_height)
             // Socket points toward seat tube mid-junction at calculated tt_angle
-            translate([0, 0, top_extension_translation])
+            translate([0, 0, top_extension_translation + down_tube_extension_translation])
                 rotate([0, tt_angle, 0]) {
                     cylinder(h = extension_depth, r = top_extension_outer_radius);  // 6mm walls
 
@@ -122,17 +122,15 @@ module head_tube_lug() {
                     cylinder(h = 20, d = bolt_head_clearance, center = false);
             }
 
-        // Top tube socket bore
         lug_collar_radius = (head_tube_od + 2*wall_thickness) / 2;
         socket_offset = lug_collar_radius - top_extension_outer_radius;
-        translate([0, 0, top_extension_translation])
-            rotate([0, tt_angle, 0])
+        translate([0, 0, top_extension_translation + down_tube_extension_translation])
+            rotate([0, tt_angle, 0]) {
+                // Top tube socket bore
                 translate([socket_offset, 0, extension_depth - extension_socket_depth])
                     cylinder(h = extension_socket_depth + epsilon, d = top_tube_od + socket_clearance);
 
-        // Top tube bolt hole (M6 through-bolt) - positioned like downtube bolt
-        translate([0, 0, top_extension_translation])
-            rotate([0, tt_angle, 0])
+                // Top tube bolt hole (M6 through-bolt) - positioned like downtube bolt
                 translate([socket_offset, 0, extension_depth - extension_socket_depth + junction_socket_depth/2])
                     rotate([90, 0, 0]) {
                         // Tap hole from one side
@@ -147,6 +145,7 @@ module head_tube_lug() {
                         translate([0, 0, -(top_tube_od/2 + 6)])
                             cylinder(h = 2.5, d = 9.5);
                     }
+                }
                     
          // Chop the excess top extension off
          translate([0, 0, lug_height])

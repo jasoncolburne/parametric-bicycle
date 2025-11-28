@@ -61,6 +61,17 @@ module frame_assembly() {
                 translate([0, 0, down_tube_length-junction_socket_depth])
                     head_tube_lug_repositioned();
 
+    // --- TOP TUBE ---
+    // Connects from head tube lug top extension socket to seat tube mid-junction
+    // Offset by extension_socket_depth at head tube end (to insert into lug)
+    // and junction_socket_depth at seat tube end (to insert into mid-junction)
+    color(color_plastic)
+        orient_to(ht_top_tube, st_top_tube)
+            translate([0, 0, -extension_socket_depth])
+                for (i = [0:top_tube_sections-1])
+                    translate([0, 0, i * top_tube_section_length])
+                        top_tube_section(i);
+
     // --- SEAT TUBE ---
     // Connects from bb_seat_tube to st_top
     // Offset by -socket_depth so tube starts inside BB junction socket
@@ -71,13 +82,20 @@ module frame_assembly() {
                     translate([0, 0, i * seat_tube_section_length])
                         seat_tube_section(i);
 
-    // --- SEAT TUBE JUNCTION ---
+    // --- SEAT TUBE JUNCTION (TOP) ---
     // Position so junction top is near st_top
     // stj_height = 60, so place junction at (actual_length - 60) along tube
     color(color_metal, alpha_metal)
         orient_to(bb_seat_tube, st_top)
             translate([0, 0, norm(st_top - bb_seat_tube) - 60])
                 seat_tube_junction();
+
+    // --- SEAT TUBE MID-JUNCTION ---
+    // Position at 50% up seat tube for top tube connection
+    color(color_metal, alpha_metal)
+        orient_to(bb_seat_tube, st_top)
+            translate(st_top_tube - bb_seat_tube)
+                seat_tube_mid_junction();
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area
@@ -105,7 +123,6 @@ module frame_assembly() {
                         translate([0, 0, i * seat_stay_section_length])
                             seat_stay_section(i);
 
-
     // --- DROPOUT JUNCTIONS ---
     color(color_metal, alpha_metal)
         for (side = [-1, 1]) {
@@ -119,6 +136,40 @@ module frame_assembly() {
         rotate([90, 0, 0])
             translate([0, 0, -bb_shell_width/2])
                 bb_shell();
+
+    // --- DEBUG CYLINDERS FOR TOP TUBE SOCKET POSITION CALCULATION ---
+    debug_cylinder_diameter = 5;
+    debug_cylinder_length = 200;
+
+    // Red: Step 1 - ht_down_tube (starting point)
+    color("red", 0.8)
+        translate(tt_step1)
+            rotate([90, 0, 0])
+                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
+
+    // Green: Step 2 - after moving along downtube direction
+    color("green", 0.8)
+        translate(tt_step2)
+            rotate([90, 0, 0])
+                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
+
+    // Blue: Step 3 - after moving up head tube direction
+    color("blue", 0.8)
+        translate(tt_step3)
+            rotate([90, 0, 0])
+                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
+
+    // Yellow: Step 4 - final socket position (after moving along top tube direction)
+    color("yellow", 0.8)
+        translate(tt_step4)
+            rotate([90, 0, 0])
+                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
+
+    // Magenta: st_top_tube (seat tube mid-junction position)
+    color("magenta", 0.8)
+        translate(st_top_tube)
+            rotate([90, 0, 0])
+                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
 
     // NOTE: Additional components (dropouts, motor mount, brake mount,
     // cable guides, rack mounts) removed for geometry verification.

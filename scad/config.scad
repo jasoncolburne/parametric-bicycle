@@ -318,7 +318,7 @@ bb_chainstay_z = _bb_chainstay_z;
 
 // Tube connection points at head tube
 ht_down_tube = _ht_down_tube;
-ht_top_tube = _ht_lug_top;  // Top of head tube lug (for top tube connection)
+// ht_top_tube and debug steps exported after calculations below
 
 // Tube connection points at seat tube
 st_seat_stay_z = _st_seat_stay_z;
@@ -346,25 +346,48 @@ _dt_vec = bb_down_tube - ht_down_tube;
 _ht_dot_dt = _ht_vec[0]*_dt_vec[0] + _ht_vec[1]*_dt_vec[1] + _ht_vec[2]*_dt_vec[2];
 dt_angle = acos(_ht_dot_dt / (norm(_ht_vec) * norm(_dt_vec)));
 
-// Calculate the actual angle between head tube and downtube in 3D space (global)
-ht_unit = (_ht_vec) / norm(_ht_vec);
-dt_unit = (bb_down_tube - ht_down_tube) / norm(bb_down_tube - ht_down_tube);
+ht_unit = _ht_vec / norm(_ht_vec);
+dt_unit = _dt_vec / norm(_dt_vec);
 
-
-// Head tube dimensions
-lug_outer_radius = head_tube_od / 2 + wall_thickness;
-
-// Top tube dimensions
-top_extension_outer_radius = top_tube_od / 2 + extension_thickness;
-top_extension_angle = 180 - tt_angle;
-top_extension_offset = sin(top_extension_angle)*top_extension_outer_radius - (lug_outer_radius - cos(top_extension_angle)*top_extension_outer_radius)/tan(top_extension_angle);
-top_extension_translation = lug_height - top_extension_offset;
+// Top tube direction: rotate head tube direction by tt_angle around global Y-axis
+tt_unit = [
+    ht_unit[0] * cos(tt_angle) - ht_unit[2] * sin(tt_angle),
+    ht_unit[1],
+    ht_unit[0] * sin(tt_angle) + ht_unit[2] * cos(tt_angle)
+];
 
 // Down tube dimensions
 down_tube_extension_outer_radius = down_tube_od / 2 + extension_thickness;
 down_tube_extension_translation = 40;
 
+extension_body_depth = extension_depth - extension_socket_depth;
 
+// Head tube dimensions
+lug_outer_radius = head_tube_od / 2 + wall_thickness;
+lug_collar_radius = lug_outer_radius;
+top_extension_outer_radius = top_tube_od / 2 + extension_thickness;
+socket_offset = lug_collar_radius - top_extension_outer_radius;
+alpha = 180 - tt_angle;
+x = lug_outer_radius;
+y = top_extension_outer_radius;
+top_extension_offset = sin(alpha)*y-(x-cos(alpha)*y)/tan(alpha);
+top_extension_translation = lug_height - top_extension_offset - down_tube_extension_translation;
+
+// Build up socket position step by step for debugging
+_tt_step1 = _ht_down_tube;
+_tt_step2 = _tt_step1 - dt_unit * extension_depth;
+_tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
+_tt_step4 = _tt_step3 + tt_unit * extension_depth;
+lug_tt_socket_position = _tt_step4;
+
+// Export for assembly (after calculations)
+ht_top_tube = lug_tt_socket_position;  // Top tube socket position in lug
+
+// Debug exports for visualization
+tt_step1 = _tt_step1;
+tt_step2 = _tt_step2;
+tt_step3 = _tt_step3;
+tt_step4 = _tt_step4;
 
 // =============================================================================
 // HELPER MODULE: Orient object from point A toward point B
