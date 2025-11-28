@@ -25,10 +25,22 @@ module seat_tube_mid_junction() {
             translate([0, 0, -extension_socket_depth])
                 cylinder(h=extension_depth, d = top_tube_od + 2 * extension_thickness);
 
+            // spherical boss for extension bolt hole
+            translate([0, 0, -junction_socket_depth/2])
+                rotate([90, 0, 0])
+                    translate([0, 0, (top_tube_od + 2 * extension_thickness)/2])
+                        sphere(r = 8);
+
             // sleeve on seat tube
             translate([0, 0, extension_depth-extension_socket_depth])
-                rotate([0, rotation_angle, 0])
-                    cylinder(h=stmj_height, d=seat_tube_od + 2*stmj_wall, center=true);
+                rotate([0, rotation_angle, 0]) {
+                    cylinder(h=stmj_height, d=top_tube_od + 2 * extension_thickness, center=true);
+
+                    // spherical boss for sleeve through bolt
+                    rotate([90, 0, 0])
+                        translate([0, 0, (top_tube_od + 2 * extension_thickness)/2])
+                            sphere(r = 8);
+                }
         }
 
         // extension bore
@@ -40,6 +52,41 @@ module seat_tube_mid_junction() {
             rotate([0, rotation_angle, 0])
                 translate([0, 0, -50])
                     cylinder(h=stmj_height*4, d=seat_tube_od + socket_clearance);
+
+        // extension bolt hole (M6 through-bolt)
+        translate([0, 0, -junction_socket_depth/2])
+            rotate([90, 0, 0]) {
+                // Tap hole from one side
+                translate([0, 0, (top_tube_od + socket_clearance)/2 - 2])
+                    cylinder(h = m6_thread_depth, d = m6_tap_drill);
+
+                // Clearance hole from opposite side
+                translate([0, 0, -(top_tube_od/2 + extension_thickness)])
+                    cylinder(h = top_tube_od/2 + extension_thickness - ((top_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
+
+                // Counterbore for socket head
+                translate([0, 0, -(top_tube_od/2 + extension_thickness)])
+                    cylinder(h = 2.5, d = 9.5);
+            }
+
+        // sleeve through bolt hole
+        translate([0, 0, extension_depth-extension_socket_depth])
+            rotate([0, rotation_angle, 0])
+                rotate([90, 0, 0]) {
+                    sleeve_diameter = top_tube_od + 2 * extension_thickness;
+
+                    // Tap hole from one side
+                    translate([0, 0, (seat_tube_od + socket_clearance)/2 - 2])
+                        cylinder(h = m6_thread_depth, d = m6_tap_drill);
+
+                    // Clearance hole from opposite side - goes all the way through
+                    translate([0, 0, -(sleeve_diameter/2)])
+                        cylinder(h = sleeve_diameter/2 + sleeve_diameter/2 - ((seat_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
+
+                    // Counterbore for socket head
+                    translate([0, 0, -(sleeve_diameter/2)])
+                        cylinder(h = 3.0, d = 9.5);
+                }
     }
 }
 
