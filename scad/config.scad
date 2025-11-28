@@ -224,28 +224,21 @@ _ss_end = _dropout + [0, _ss_spread, _dropout_seat_stay_z];
 _seat_stay_core = norm(_ss_end - _ss_start);
 seat_stay_length = _seat_stay_core + junction_socket_depth/2 + junction_socket_depth;
 
-// Top tube: from head tube lug top to seat tube mid-junction (50% up seat tube)
-// Head tube lug top is at ht_down_tube + 90mm along head tube direction
-// Seat tube mid-junction is at 50% up seat tube from BB
-_seat_tube_mid_height = norm(_st_top - _bb_seat_tube_offset) * 0.5;
-_ht_lug_top = _ht_down_tube + [0, 0, 90];  // Lug is 90mm tall
-_st_mid = _bb_seat_tube_offset + (_st_top - _bb_seat_tube_offset) * 0.5;
-_top_tube_core = norm(_st_mid - _ht_lug_top);
-top_tube_length = _top_tube_core + 2 * junction_socket_depth;
+// Top tube length calculated later after socket positions are defined
 
 // --- SECTION COUNTS (to fit build volume) ---
 down_tube_sections = ceil(down_tube_length / max_section_length);
 seat_tube_sections = ceil(seat_tube_length / max_section_length);
 chainstay_sections = ceil(chainstay_actual_length / max_section_length);
 seat_stay_sections = ceil(seat_stay_length / max_section_length);
-top_tube_sections = ceil(top_tube_length / max_section_length);
+// top_tube_sections calculated later after top_tube_length is defined
 
 // --- DERIVED SECTION LENGTHS ---
 down_tube_section_length = down_tube_length / down_tube_sections;
 seat_tube_section_length = seat_tube_length / seat_tube_sections;
 chainstay_section_length = chainstay_actual_length / chainstay_sections;
 seat_stay_section_length = seat_stay_length / seat_stay_sections;
-top_tube_section_length = top_tube_length / top_tube_sections;
+// top_tube_section_length calculated later after top_tube_length is defined
 
 // Down tube gusset angle (for step-through bend)
 down_tube_gusset_angle = 150;        // Angle between sections at gusset (degrees)
@@ -322,7 +315,7 @@ ht_down_tube = _ht_down_tube;
 
 // Tube connection points at seat tube
 st_seat_stay_z = _st_seat_stay_z;
-st_top_tube = _st_mid;  // Mid-height on seat tube (for top tube connection)
+// st_top_tube exported later after calculation
 
 // Tube connection points at dropout
 dropout_chainstay_z = _dropout_chainstay_z;
@@ -380,8 +373,36 @@ _tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
 _tt_step4 = _tt_step3 + tt_unit * extension_depth;
 lug_tt_socket_position = _tt_step4;
 
+// Seat tube mid-junction socket position
+// Project from lug socket along tt_unit to seat tube centerline
+// Seat tube runs from bb_seat_tube to st_top
+_seat_tube_unit = (_st_top - _bb_seat_tube_offset) / norm(_st_top - _bb_seat_tube_offset);
+
+// Find intersection: lug_tt_socket_position + t*tt_unit = bb_seat_tube + s*seat_tube_unit
+// This is a line-line closest approach problem in 3D
+// For simplicity, project to find where top tube crosses seat tube Z height at 50%
+_st_mid_point = _bb_seat_tube_offset + (_st_top - _bb_seat_tube_offset) * 0.5;
+// Project from lug socket to this point, then back up by extension_depth - extension_socket_depth
+_tt_to_st_vec = _st_mid_point - lug_tt_socket_position;
+_tt_length_to_junction = norm(_tt_to_st_vec);
+seat_tube_mid_junction_position = lug_tt_socket_position + tt_unit * (_tt_length_to_junction - (extension_depth - extension_socket_depth));
+
+// Top tube length from socket to socket
+top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + extension_socket_depth + junction_socket_depth;
+
+// Top tube sections
+top_tube_sections = ceil(top_tube_length / max_section_length);
+top_tube_section_length = top_tube_length / top_tube_sections;
+
+// Seat tube mid-junction orientation angles
+// Socket should point toward lug (opposite of tt_unit)
+_tt_inv = -tt_unit;
+stmj_socket_rotation_y = atan2(_tt_inv[0], _tt_inv[2]);  // Rotation around Y axis
+stmj_socket_rotation_x = atan2(_tt_inv[1], sqrt(_tt_inv[0]*_tt_inv[0] + _tt_inv[2]*_tt_inv[2]));  // Rotation around X axis
+
 // Export for assembly (after calculations)
 ht_top_tube = lug_tt_socket_position;  // Top tube socket position in lug
+st_top_tube = seat_tube_mid_junction_position;  // Seat tube mid-junction socket position
 
 // Debug exports for visualization
 tt_step1 = _tt_step1;

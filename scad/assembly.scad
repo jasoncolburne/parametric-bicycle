@@ -91,11 +91,11 @@ module frame_assembly() {
                 seat_tube_junction();
 
     // --- SEAT TUBE MID-JUNCTION ---
-    // Position at 50% up seat tube for top tube connection
+    // Position at end of top tube, oriented along top tube direction
     color(color_metal, alpha_metal)
-        orient_to(bb_seat_tube, st_top)
-            translate(st_top_tube - bb_seat_tube)
-                seat_tube_mid_junction();
+        orient_to(ht_top_tube, st_top_tube)
+            translate([0, 0, top_tube_length - extension_socket_depth])
+                seat_tube_mid_junction_repositioned();
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area
