@@ -53,16 +53,49 @@ translate([0, spacing, 0]) {
 echo("Test 5: Four-way junction sleeve");
 translate([spacing, spacing, 0]) {
     collars = [
-        Collar(DOWN_TUBE, [0, 0, 0], 50),
-        Collar(SEAT_TUBE, [0, 90, 0], 50),
-        Collar(TOP_TUBE, [0, 180, 0], 50),
-        Collar(SEATSTAY, [0, 270, 0], 50)
+        Collar(DOWN_TUBE, [90, 0, 0], 50),
+        Collar(SEAT_TUBE, [90, 0, 90], 50),
+        Collar(TOP_TUBE, [90, 0, 180], 50),
+        Collar(SEATSTAY, [90, 0, 270], 50)
     ];
     sleeve(DOWN_TUBE, 100, collars);
+}
+
+// Test 6: Pinched sleeve with single collar
+echo("Test 6: Pinched sleeve with single collar and pinch bolt");
+translate([spacing * 2, spacing, 0]) {
+    collars = [
+        Collar(SEAT_TUBE, [0, 0, 0], 50)
+    ];
+    pinched_sleeve(SEAT_TUBE, 100, 50, collars);
+}
+
+// Test 7: Tapped sleeve with single collar and two taps
+echo("Test 7: Tapped sleeve with single collar and two tap positions");
+translate([0, spacing * 2, 0]) {
+    collars = [
+        Collar(DOWN_TUBE, [0, 0, 0], 50)
+    ];
+    taps = [30, 70];  // Two tap positions along sleeve
+    tapped_sleeve(DOWN_TUBE, 100, taps, collars);
+}
+
+// Test 8: Tapped sleeve with multiple collars and taps
+echo("Test 8: Tapped sleeve - three collars with three taps");
+translate([spacing, spacing * 2, 0]) {
+    collars = [
+        Collar(TOP_TUBE, [0, 0, 0], 25),
+        Collar(TOP_TUBE, [0, 0, 120], 50),
+        Collar(TOP_TUBE, [0, 0, 240], 75)
+    ];
+    taps = [20, 50, 80];
+    tapped_sleeve(TOP_TUBE, 100, taps, collars);
 }
 
 echo("=== Dimension Checks ===");
 echo("DOWN_TUBE outer radius:", tube_outer_radius(DOWN_TUBE));
 echo("DOWN_TUBE collar thickness:", tube_collar_thickness(DOWN_TUBE));
+echo("DOWN_TUBE pinch separation:", tube_pinch_separation(DOWN_TUBE));
 echo("SEAT_TUBE outer radius:", tube_outer_radius(SEAT_TUBE));
+echo("SEAT_TUBE pinch separation:", tube_pinch_separation(SEAT_TUBE));
 echo("TOP_TUBE outer radius:", tube_outer_radius(TOP_TUBE));

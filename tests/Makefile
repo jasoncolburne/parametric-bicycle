@@ -5,57 +5,57 @@ OPENSCAD := /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD
 OPENSCAD_FLAGS := --backend=Manifold
 
 # Test files
-TESTS := test_phase1 test_phase2 test_phase3 test_phase4 test_phase5
+TESTS := test_core_structs test_basic_primitives test_tubes test_sleeve_components test_sleeve_assembly
 
 # Phony targets
-.PHONY: all clean phase1 phase2 phase3 phase4 phase5
+.PHONY: all clean core_structs basic_primitives tubes sleeve_components sleeve_assembly
 
 # Default: run all tests
 all: $(TESTS)
 
-# Phase 1: Core data structures
-phase1: test_phase1
+# Core data structures
+core_structs: test_core_structs
 
-test_phase1:
-	@echo "=== Running Phase 1 Tests (BoltSize, TubeSize, Helpers) ==="
-	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_phase1.stl test_phase1.scad 2>&1 | grep "ECHO:"
-	@echo "✓ Phase 1 tests passed"
+test_core_structs:
+	@echo "=== Running Core Structs Tests (BoltSize, TubeSize, Helpers) ==="
+	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_core_structs.stl test_core_structs.scad 2>&1 | grep "ECHO:"
+	@echo "✓ Core structs tests passed"
 	@echo ""
 
-# Phase 2: Simple primitives
-phase2: test_phase2
+# Basic primitives
+basic_primitives: test_basic_primitives
 
-test_phase2:
-	@echo "=== Running Phase 2 Tests (tube_core, inner_sleeve, rivnut_hole) ==="
-	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_phase2.stl test_phase2.scad 2>&1 | grep "ECHO:"
-	@echo "✓ Phase 2 tests passed"
+test_basic_primitives:
+	@echo "=== Running Basic Primitives Tests (tube_core, inner_sleeve, rivnut_hole) ==="
+	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_basic_primitives.stl test_basic_primitives.scad 2>&1 | grep "ECHO:"
+	@echo "✓ Basic primitives tests passed"
 	@echo ""
 
-# Phase 3: Tube ends and complete tubes
-phase3: test_phase3
+# Tube tests
+tubes: test_tubes
 
-test_phase3:
-	@echo "=== Running Phase 3 Tests (tube_end, tube, tube_section) ==="
-	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_phase3.stl test_phase3.scad 2>&1 | grep "ECHO:"
-	@echo "✓ Phase 3 tests passed"
+test_tubes:
+	@echo "=== Running Tube Tests (tube_end, tube, tube_section) ==="
+	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_tubes.stl test_tubes.scad 2>&1 | grep "ECHO:"
+	@echo "✓ Tube tests passed"
 	@echo ""
 
-# Phase 4: Sleeve collar and pinch bolt
-phase4: test_phase4
+# Sleeve components
+sleeve_components: test_sleeve_components
 
-test_phase4:
-	@echo "=== Running Phase 4 Tests (sleeve_collar, sleeve_pinch_bolt) ==="
-	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_phase4.stl test_phase4.scad 2>&1 | grep "ECHO:"
-	@echo "✓ Phase 4 tests passed"
+test_sleeve_components:
+	@echo "=== Running Sleeve Components Tests (sleeve_collar, sleeve_pinch_bolt) ==="
+	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_sleeve_components.stl test_sleeve_components.scad 2>&1 | grep "ECHO:"
+	@echo "✓ Sleeve components tests passed"
 	@echo ""
 
-# Phase 5: Complete sleeve assembly
-phase5: test_phase5
+# Sleeve assembly
+sleeve_assembly: test_sleeve_assembly
 
-test_phase5:
-	@echo "=== Running Phase 5 Tests (sleeve) ==="
-	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_phase5.stl test_phase5.scad 2>&1 | grep "ECHO:"
-	@echo "✓ Phase 5 tests passed"
+test_sleeve_assembly:
+	@echo "=== Running Sleeve Assembly Tests (sleeve, pinched_sleeve, tapped_sleeve) ==="
+	@$(OPENSCAD) $(OPENSCAD_FLAGS) -o /tmp/test_sleeve_assembly.stl test_sleeve_assembly.scad 2>&1 | grep "ECHO:"
+	@echo "✓ Sleeve assembly tests passed"
 	@echo ""
 
 clean:

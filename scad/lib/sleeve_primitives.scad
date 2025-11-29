@@ -62,8 +62,8 @@ module inner_sleeve(tube_size) {
                         cylinder(r = through_r, h = outer_r * 3, center = true);
         }
 
-        translate([0, 0, -0.01])
-            cylinder(r = outer_r - tube_thickness - thickness - clearance, h = sleeve_length + 0.02);
+        translate([0, 0, -sleeve_length])
+            cylinder(r = outer_r - tube_thickness - thickness - clearance, h = sleeve_length * 3);
     }
 }
 
@@ -104,13 +104,13 @@ module sleeve_collar(collar) {
 
                 // Socket bore
                 translate([0, 0, extension_depth - socket_depth])
-                    cylinder(r = outer_r + socket_clearance/2, h = socket_depth + 0.01);
+                    cylinder(r = outer_r + socket_clearance, h = 2 * socket_depth);
 
                 // Through-bolt holes (M6 or M5)
                 translate([0, 0, extension_depth - socket_depth + socket_depth/2])
                     rotate([90, 0, 0]) {
                         // Tap hole from one side
-                        translate([0, 0, outer_r + socket_clearance/2 - 2])
+                        translate([0, 0, outer_r + socket_clearance - 2])
                             cylinder(r = tap_r, h = 12);
 
                         // Clearance hole from opposite side
