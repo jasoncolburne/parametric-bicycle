@@ -61,13 +61,14 @@ translate([spacing, spacing, 0]) {
     sleeve(DOWN_TUBE, 100, collars);
 }
 
-// Test 6: Pinched sleeve with single collar
-echo("Test 6: Pinched sleeve with single collar and pinch bolt");
+// Test 6: Pinched sleeve with single collar and stepped bore
+echo("Test 6: Pinched sleeve with single collar, pinch bolt, and stepped bore");
 translate([spacing * 2, spacing, 0]) {
     collars = [
         Collar(SEAT_TUBE, [-90, 0, 0], 50)
     ];
-    pinched_sleeve(SEAT_TUBE, 100, 50, collars, 2);
+    // Stepped bore: upper smaller than lower (for demonstration)
+    pinched_sleeve(SEAT_TUBE, 100, 50, collars, 2, SEAT_TUBE, SEAT_TUBE);
 }
 
 // Test 7: Tapped sleeve with single collar and two taps
