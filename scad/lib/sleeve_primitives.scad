@@ -15,14 +15,17 @@ module sleeve(tube_size, height, collars) {
     difference() {
         union() {
             // Base sleeve cylinder
-            cylinder(r = outer_r + thickness, h = height);  // Default 100mm sleeve length
+            cylinder(r = outer_r + thickness, h = height);
 
             // Add all collars
             for (collar = collars) {
                 sleeve_collar(collar);
             }
+
+            // Allow injection of additional geometry (bosses, bolts)
+            children();
         }
-    
+
         translate([0, 0, -height])
             cylinder(r = outer_r + clearance, h = 3 * height);
     }
@@ -146,5 +149,75 @@ module sleeve_pinch_bolt(bolt_size, bolt_length, separation) {
         // Counterbore on one side
         translate([0, 0, -bolt_length/2])
             cylinder(r = counterbore_r, h = counterbore_d);
+    }
+}
+
+// Creates a pinched sleeve for clamp mounting
+// Uses difference() to subtract pinch slot from base sleeve
+module pinched_sleeve(tube_size, height, pinch_slot_depth, collars) {
+    outer_r = tube_outer_radius(tube_size);
+    thickness = tube_collar_thickness(tube_size);
+    separation = tube_pinch_separation(tube_size);
+    bolt_size = tube_bolt_size(tube_size);
+
+    // Pinch slot width (typically 2-3mm for access)
+    slot_width = 2;
+
+    difference() {
+        // Base sleeve with pinch bolt as child
+        sleeve(tube_size, height, collars) {
+            // Pinch bolt positioned at pinch slot
+            translate([outer_r + thickness, 0, pinch_slot_depth])
+                rotate([0, 90, 0])
+                    sleeve_pinch_bolt(bolt_size, outer_r + thickness + 10, separation);
+        }
+
+        // Pinch slot (vertical cut through sleeve wall)
+        translate([-(slot_width/2), -(outer_r + thickness + 1), 0])
+            cube([slot_width, (outer_r + thickness + 1) * 2, height]);
+    }
+}
+
+// Creates a tapped sleeve for bolt mounting
+// Passes bosses and bolt holes as children to base sleeve
+module tapped_sleeve(tube_size, height, taps, collars) {
+    outer_r = tube_outer_radius(tube_size);
+    thickness = tube_collar_thickness(tube_size);
+    bolt_size = tube_bolt_size(tube_size);
+
+    tap_r = bolt_tap_radius(bolt_size);
+    clearance_r = bolt_clearance_radius(bolt_size);
+    counterbore_r = bolt_counterbore_radius(bolt_size);
+    counterbore_d = bolt_counterbore_depth(bolt_size);
+    boss_r = bolt_boss_radius(bolt_size);
+
+    difference() {
+        // Base sleeve with bosses as children
+        sleeve(tube_size, height, collars) {
+            // Add bosses at each tap position
+            for (z = taps) {
+                translate([outer_r + thickness, 0, z])
+                    sphere(r = boss_r);
+            }
+        }
+
+        // Through-bolt holes at each tap position
+        for (z = taps) {
+            translate([0, 0, z])
+                rotate([0, 90, 0]) {
+                    // Tap hole from inner side
+                    translate([0, 0, outer_r - 2])
+                        cylinder(r = tap_r, h = 12);
+
+                    // Clearance hole from opposite side
+                    translate([0, 0, -(outer_r + thickness)])
+                        cylinder(r = clearance_r,
+                                h = (outer_r + thickness) - (outer_r - 2));
+
+                    // Counterbore for socket head
+                    translate([0, 0, -(outer_r + thickness)])
+                        cylinder(r = counterbore_r, h = counterbore_d);
+                }
+        }
     }
 }
