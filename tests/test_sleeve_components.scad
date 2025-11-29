@@ -12,28 +12,40 @@ echo("=== Phase 4 Sleeve Collar and Pinch Bolt Tests ===");
 echo("Test 1: Sleeve collar - DOWN_TUBE, no rotation, height 0");
 translate([0, 0, 0]) {
     collar = Collar(DOWN_TUBE, [0, 0, 0], 0);
-    sleeve_collar(collar);
+    difference() {
+        sleeve_collar(collar);
+        sleeve_collar(collar, render_negative = true);
+    }
 }
 
 // Test 2: Sleeve collar rotated 90° around X axis
 echo("Test 2: Sleeve collar - SEAT_TUBE, rotated [90, 0, 0], height 25");
 translate([spacing, 0, 0]) {
     collar = Collar(SEAT_TUBE, [90, 0, 0], 25);
-    sleeve_collar(collar);
+    difference() {
+        sleeve_collar(collar);
+        sleeve_collar(collar, render_negative = true);
+    }
 }
 
 // Test 3: Sleeve collar rotated 45° around Y axis
 echo("Test 3: Sleeve collar - TOP_TUBE, rotated [0, 45, 0], height 50");
 translate([spacing * 2, 0, 0]) {
     collar = Collar(TOP_TUBE, [0, 45, 0], 50);
-    sleeve_collar(collar);
+    difference() {
+        sleeve_collar(collar);
+        sleeve_collar(collar, render_negative = true);
+    }
 }
 
 // Test 4: Sleeve collar with complex rotation
 echo("Test 4: Sleeve collar - DOWN_TUBE, rotated [30, 60, 45], height 75");
 translate([spacing * 3, 0, 0]) {
     collar = Collar(DOWN_TUBE, [30, 60, 45], 75);
-    sleeve_collar(collar);
+    difference() {
+        sleeve_collar(collar);
+        sleeve_collar(collar, render_negative = true);
+    }
 }
 
 // Test 5: Pinch bolt with M6 bolt
@@ -67,7 +79,10 @@ translate([spacing * 2, spacing, 0]) {
 echo("Test 8: Assembly - collar + pinch bolt");
 translate([spacing * 3, spacing, 0]) {
     collar = Collar(DOWN_TUBE, [0, 90, 0], 0);
-    sleeve_collar(collar);
+    difference() {
+        sleeve_collar(collar);
+        sleeve_collar(collar, render_negative = true);
+    }
 
     // Position pinch bolt at appropriate location
     outer_r = tube_outer_radius(DOWN_TUBE);

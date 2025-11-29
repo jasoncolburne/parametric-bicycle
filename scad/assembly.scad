@@ -59,15 +59,15 @@ module frame_assembly() {
         orient_to(bb_down_tube, ht_down_tube)
             rotate([0, 0, 180])
                 translate([0, 0, down_tube_length-junction_socket_depth])
-                    head_tube_lug_repositioned();
+                    head_tube_lug();
 
     // --- TOP TUBE ---
     // Connects from head tube lug top extension socket to seat tube mid-junction
-    // Offset by extension_socket_depth at head tube end (to insert into lug)
+    // Offset by socket_depth at head tube end (to insert into lug)
     // and junction_socket_depth at seat tube end (to insert into mid-junction)
     color(color_plastic)
         orient_to(ht_top_tube, st_top_tube)
-            translate([0, 0, -extension_socket_depth])
+            translate([0, 0, -tube_socket_depth(TOP_TUBE)])
                 for (i = [0:top_tube_sections-1])
                     translate([0, 0, i * top_tube_section_length])
                         top_tube_section(i);
@@ -94,7 +94,7 @@ module frame_assembly() {
     // Position at end of top tube, oriented along top tube direction
     color(color_metal, alpha_metal)
         orient_to(ht_top_tube, st_top_tube)
-            translate([0, 0, top_tube_length - extension_socket_depth])
+            translate([0, 0, top_tube_length - tube_socket_depth(TOP_TUBE)])
                 seat_tube_mid_junction();
 
     // --- CHAINSTAYS ---

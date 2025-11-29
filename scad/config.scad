@@ -48,13 +48,15 @@ tt_angle = 108; // top tube angle with respect to head tube
 // =============================================================================
 // TUBE DIAMETERS
 // =============================================================================
-head_tube_id = 44;                   // 1-1/8" straight steerer
-head_tube_od = 49;
+// All tube dimensions derived from tube_sizes.scad
+head_tube_od = tube_outer_radius(HEAD_TUBE) * 2;
+head_tube_id = head_tube_od - tube_thickness(HEAD_TUBE) * 2;
 seat_tube_id = 27.2;                 // Standard seatpost
-down_tube_od = 44;
-top_tube_od = 44;                    // Same as down tube for structural strength
-seat_stay_od = 16;
-chainstay_od = 22;
+seat_tube_od = tube_outer_radius(SEAT_TUBE) * 2;
+down_tube_od = tube_outer_radius(DOWN_TUBE) * 2;
+top_tube_od = tube_outer_radius(TOP_TUBE) * 2;
+chainstay_od = tube_outer_radius(CHAINSTAY) * 2;
+seat_stay_od = tube_outer_radius(SEATSTAY) * 2;
 
 // =============================================================================
 // MOTOR CONFIGURATION
@@ -167,9 +169,6 @@ max_section_length = 245;            // FibreSeeker 3 Z height
 // Head tube bottom position
 ht_bottom_x = reach + head_tube_length * cos(head_tube_angle);
 ht_bottom_z = stack - head_tube_length * sin(head_tube_angle);
-
-// Seat tube
-seat_tube_od = 34;                   // Outer diameter
 
 // Seat tube top position (from origin along seat tube angle)
 st_top_x = -frame_size * cos(seat_tube_angle);
@@ -340,13 +339,7 @@ cs_spread = _cs_spread;
 ss_spread = _ss_spread;
 
 // Lug dimensions
-lug_height = 100;             // Height along head tube (increased for top tube clearance)
-
-extension_thickness = 6;     // Wall thickness around extensions
-wall_thickness = 4;
-
-extension_depth = 90;          // How far it extends for down tube socket
-extension_socket_depth = 40;           // How deep down tube inserts
+lug_height = 100;             // Height along head tube
 
 _ht_vec = ht_top - ht_bottom;
 _dt_vec = bb_down_tube - ht_down_tube;
@@ -364,15 +357,15 @@ tt_unit = [
 ];
 
 // Down tube dimensions
-down_tube_extension_outer_radius = down_tube_od / 2 + extension_thickness;
-down_tube_extension_translation = 40;
+down_tube_extension_outer_radius = down_tube_od / 2 + tube_collar_thickness(DOWN_TUBE);
+down_tube_extension_translation = 50;
 
-extension_body_depth = extension_depth - extension_socket_depth;
+extension_body_depth = tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE);
 
 // Head tube dimensions
-lug_outer_radius = head_tube_od / 2 + wall_thickness;
+lug_outer_radius = head_tube_od / 2 + tube_collar_thickness(HEAD_TUBE);
 lug_collar_radius = lug_outer_radius;
-top_extension_outer_radius = top_tube_od / 2 + extension_thickness;
+top_extension_outer_radius = top_tube_od / 2 + tube_collar_thickness(TOP_TUBE);
 socket_offset = lug_collar_radius - top_extension_outer_radius;
 alpha = 180 - tt_angle;
 x = lug_outer_radius;
@@ -382,9 +375,9 @@ top_extension_translation = lug_height - top_extension_offset - down_tube_extens
 
 // Build up socket position step by step for debugging
 _tt_step1 = _ht_down_tube;
-_tt_step2 = _tt_step1 - dt_unit * extension_depth;
+_tt_step2 = _tt_step1 - dt_unit * tube_extension_depth(DOWN_TUBE);
 _tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
-_tt_step4 = _tt_step3 + tt_unit * extension_depth;
+_tt_step4 = _tt_step3 + tt_unit * tube_extension_depth(TOP_TUBE);
 lug_tt_socket_position = _tt_step4;
 
 // Seat tube mid-junction socket position
@@ -406,10 +399,10 @@ _t_intersection = (_b * _e - _c * _d) / (_a * _c - _b * _b);
 // Point on seat tube axis where top tube ray intersects
 _st_intersection_point = _bb_seat_tube_offset + _st_unit * _t_intersection;
 // Back up by extension offset along -tt_unit to place junction socket entrance
-seat_tube_mid_junction_position = _st_intersection_point - tt_unit * (extension_depth - extension_socket_depth);
+seat_tube_mid_junction_position = _st_intersection_point - tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
 
 // Top tube length from socket to socket
-top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + extension_socket_depth;
+top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position) + tube_socket_depth(TOP_TUBE);
 
 // Top tube sections
 top_tube_sections = ceil(top_tube_length / max_section_length);
@@ -427,7 +420,7 @@ st_top_tube = seat_tube_mid_junction_position;  // Seat tube mid-junction socket
 
 // Seat tube mid-junction bolt positioning
 // Calculate global position of sleeve bolt, then project onto seat tube axis
-_st_mid_junction_bolt_global = seat_tube_mid_junction_position + tt_unit * (extension_depth - extension_socket_depth);
+_st_mid_junction_bolt_global = seat_tube_mid_junction_position + tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
 _st_vec_for_projection = st_top - bb_seat_tube;
 _st_unit_for_projection = _st_vec_for_projection / norm(_st_vec_for_projection);
 _st_bolt_offset_vec = _st_mid_junction_bolt_global - bb_seat_tube;

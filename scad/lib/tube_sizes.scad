@@ -34,6 +34,36 @@ function tube_pinch_separation(ts) = ts[_TUBE_PINCH_SEPARATION];
 function tube_bolt_size(ts) = ts[_TUBE_BOLT_SIZE];
 
 // Standard tube sizes based on current frame design
+// Standard 1-1/8" straight steerer (28.6mm OD, 25mm ID)
+HEAD_TUBE = TubeSize(
+    14.3,                // outer_radius (28.6mm OD - standard 1-1/8" steerer)
+    1.8,                 // thickness (25mm ID)
+    30,                  // inner_sleeve_depth
+    3,                   // inner_sleeve_thickness
+    0.25,                // inner_sleeve_clearance
+    40,                  // socket_depth
+    0.25,                // socket_clearance
+    70,                  // extension_depth
+    10,                   // collar_thickness
+    1.5,                 // pinch_separation
+    M5_BOLT              // bolt_size (M5 for head tube pinch)
+);
+
+// Stepped bore upper section (2mm step for seating shoulder)
+HEAD_TUBE_UPPER = TubeSize(
+    12.3,                    // outer_radius (24.6mm OD - 2mm step for seating)
+    1.8,                     // thickness
+    30,                      // inner_sleeve_depth
+    3,                       // inner_sleeve_thickness
+    0.25,                    // inner_sleeve_clearance
+    40,                      // socket_depth
+    0.25,                    // socket_clearance
+    70,                      // extension_depth
+    6,                       // collar_thickness
+    1.5,                     // pinch_separation
+    M5_BOLT                  // bolt_size
+);
+
 DOWN_TUBE = TubeSize(
     22,     // outer_radius (44mm OD)
     3,      // thickness
@@ -42,7 +72,7 @@ DOWN_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    70,     // extension_depth
+    90,     // extension_depth
     6,      // collar_thickness
     1.5,    // pinch_separation
     M6_BOLT // bolt_size
@@ -56,7 +86,7 @@ SEAT_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    70,     // extension_depth
+    80,     // extension_depth
     6,      // collar_thickness
     1.2,    // pinch_separation
     M6_BOLT // bolt_size
@@ -70,7 +100,7 @@ TOP_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    70,     // extension_depth
+    80,     // extension_depth
     6,      // collar_thickness
     1,      // pinch_separation
     M6_BOLT // bolt_size
@@ -85,7 +115,7 @@ CHAINSTAY = TubeSize(
     30,     // socket_depth
     0.25,   // socket_clearance
     50,     // extension_depth
-    6,      // collar_thickness
+    5,      // collar_thickness
     0.8,    // pinch_separation
     M5_BOLT // bolt_size (smaller bolts for chainstays)
 );
@@ -99,7 +129,7 @@ SEATSTAY = TubeSize(
     30,     // socket_depth
     0.25,   // socket_clearance
     50,     // extension_depth
-    6,      // collar_thickness
+    5,      // collar_thickness
     0.7,    // pinch_separation
     M5_BOLT // bolt_size (smaller bolts for seatstays)
 );

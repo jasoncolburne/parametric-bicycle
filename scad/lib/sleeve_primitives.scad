@@ -26,8 +26,19 @@ module sleeve(tube_size, height, collars) {
             children();
         }
 
+        // Add all collars
+        for (collar = collars) {
+            sleeve_collar(collar, render_negative = true);
+        }
+
         translate([0, 0, -height])
             cylinder(r = outer_r + clearance, h = 3 * height);
+            
+        translate([0, 0, -height])
+            cube([height, height, height], center = true);
+
+        translate([0, 0, height * 3/2])
+            cube([height, height, height], center = true);
     }
 }
 
@@ -69,7 +80,7 @@ module inner_sleeve(tube_size) {
 
 // Creates a tubular extension with socket bore for tube insertion
 // Uses Collar struct for configuration (tube_size, rotation, height)
-module sleeve_collar(collar) {
+module sleeve_collar(collar, render_negative = false) {
     tube_size = collar_tube_size(collar);
     rotation = collar_rotation(collar);
     height = collar_height(collar);
@@ -90,18 +101,7 @@ module sleeve_collar(collar) {
     // Position and orient collar
     translate([0, 0, height])
         rotate(rotation) {
-            difference() {
-                union() {
-                    // Extension cylinder
-                    cylinder(r = outer_r + collar_thickness, h = extension_depth);
-
-                    // Spherical boss on tap side
-                    translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                        rotate([0, 90, 0])
-                            translate([0, 0, outer_r + collar_thickness])
-                                sphere(r = boss_r);
-                }
-
+            if (render_negative) {
                 // Socket bore
                 translate([0, 0, extension_depth - socket_depth])
                     cylinder(r = outer_r + socket_clearance, h = 2 * socket_depth);
@@ -110,8 +110,8 @@ module sleeve_collar(collar) {
                 translate([0, 0, extension_depth - socket_depth + socket_depth/2])
                     rotate([0, 90, 0]) {
                         // Tap hole from one side
-                        translate([0, 0, outer_r + socket_clearance - 2])
-                            cylinder(r = tap_r, h = 12);
+                        translate([0, 0, outer_r + socket_clearance])
+                            cylinder(r = tap_r, h = 9);
 
                         // Clearance hole from opposite side
                         translate([0, 0, -(outer_r + collar_thickness)])
@@ -122,6 +122,15 @@ module sleeve_collar(collar) {
                         translate([0, 0, -(outer_r + collar_thickness)])
                             cylinder(r = counterbore_r, h = counterbore_d);
                     }
+            } else {
+                // Extension cylinder
+                cylinder(r = outer_r + collar_thickness, h = extension_depth);
+
+                // Spherical boss on tap side
+                translate([0, 0, extension_depth - socket_depth + socket_depth/2])
+                    rotate([0, 90, 0])
+                        translate([0, 0, outer_r + collar_thickness])
+                            sphere(r = boss_r);
             }
         }
 }
@@ -169,11 +178,11 @@ module transform_pinch_bolt(height, radius) {
 // Uses difference() to subtract pinch slot from base sleeve
 // upper_tube_size: bore size above the pinch slot (clamping section)
 // lower_tube_size: bore size below the pinch slot (structural section)
-module pinched_sleeve(tube_size, height, pinch_slot_depth, collars, bolt_count, upper_tube_size, lower_tube_size) {
-    outer_r = tube_outer_radius(tube_size);
-    thickness = tube_collar_thickness(tube_size);
-    separation = tube_pinch_separation(tube_size);
-    bolt_size = tube_bolt_size(tube_size);
+module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth, collars, bolt_count) {
+    outer_r = tube_outer_radius(lower_tube_size);
+    thickness = tube_collar_thickness(lower_tube_size);
+    separation = tube_pinch_separation(lower_tube_size);
+    bolt_size = tube_bolt_size(lower_tube_size);
     bolt_unit = pinch_slot_depth / (bolt_count + 1);
 
     // Split height is where pinch slot begins
@@ -184,19 +193,20 @@ module pinched_sleeve(tube_size, height, pinch_slot_depth, collars, bolt_count, 
     lower_bore_r = tube_outer_radius(lower_tube_size) + tube_socket_clearance(lower_tube_size);
 
     difference() {
-        // Base sleeve with pinch bolt as child
-        sleeve(tube_size, height, collars) {
-            for (i = [1:bolt_count]) {
-                // Pinch bolt positioned at pinch slot
-                transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
-                    sleeve_pinch_bolt(bolt_size, outer_r, separation);
+        union() {
+            // Base sleeve with pinch bolt as child
+            sleeve(lower_tube_size, height, collars) {
+                for (i = [1:bolt_count]) {
+                    // Pinch bolt positioned at pinch slot
+                    transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
+                        sleeve_pinch_bolt(bolt_size, outer_r, separation);
+                }
             }
-        }
 
-        // Lower bore (below split) - typically larger diameter
-        translate([0, 0, -height])
-            cylinder(r = lower_bore_r, h = height + split_height + 0.01);
-
+            translate([0, 0, split_height])
+                cylinder(r = lower_bore_r, h = pinch_slot_depth);
+        }        
+        
         // Upper bore (above split) - typically smaller diameter for seating
         translate([0, 0, split_height])
             cylinder(r = upper_bore_r, h = pinch_slot_depth * 2);

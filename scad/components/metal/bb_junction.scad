@@ -27,6 +27,18 @@ module bb_junction() {
     // Chainstays: from [0, ±cs_spread, bb_chainstay_z] to dropout + [0, ±cs_spread, dropout_chainstay_z]
     // We handle both sides
 
+    // Tube extension parameters (defined outside difference for scope)
+    dt_extension_depth = tube_extension_depth(DOWN_TUBE);
+    dt_socket_depth = tube_socket_depth(DOWN_TUBE);
+    dt_collar_thickness = tube_collar_thickness(DOWN_TUBE);
+
+    st_extension_depth = tube_extension_depth(SEAT_TUBE);
+    st_socket_depth = tube_socket_depth(SEAT_TUBE);
+    st_collar_thickness = tube_collar_thickness(SEAT_TUBE);
+
+    cs_extension_depth = tube_extension_depth(CHAINSTAY);
+    cs_collar_thickness = tube_collar_thickness(CHAINSTAY);
+
     difference() {
         union() {
             // Long thin cylinder for BB shell - minimal wall thickness
@@ -48,12 +60,12 @@ module bb_junction() {
             dt_offset = dt_radius_from_y_axis - bb_outer_radius;
             orient_to(dt_end, dt_start) {
                 translate([0, 0, -dt_offset])
-                    cylinder(h = extension_depth + dt_offset, d = down_tube_od + 2*extension_thickness);
+                    cylinder(h = dt_extension_depth + dt_offset, d = down_tube_od + 2*dt_collar_thickness);
 
                 // Spherical boss for bolt hole (tap side only)
-                translate([0, 0, extension_depth - extension_socket_depth + junction_socket_depth/2])
+                translate([0, 0, dt_extension_depth - dt_socket_depth + junction_socket_depth/2])
                     rotate([90, 0, 0])
-                        translate([0, 0, (down_tube_od + 2*extension_thickness)/2])
+                        translate([0, 0, (down_tube_od + 2*dt_collar_thickness)/2])
                             sphere(r = 8);
             }
 
@@ -62,12 +74,12 @@ module bb_junction() {
             st_offset = st_radius_from_y_axis - bb_outer_radius;
             orient_to(st_end, st_start) {
                 translate([0, 0, -st_offset])
-                    cylinder(h = extension_depth + st_offset, d = seat_tube_od + 2*extension_thickness);
+                    cylinder(h = st_extension_depth + st_offset, d = seat_tube_od + 2*st_collar_thickness);
 
                 // Spherical boss for bolt hole (tap side only)
-                translate([0, 0, extension_depth - extension_socket_depth + junction_socket_depth/2])
+                translate([0, 0, st_extension_depth - st_socket_depth + junction_socket_depth/2])
                     rotate([90, 0, 0])
-                        translate([0, 0, (seat_tube_od + 2*extension_thickness)/2])
+                        translate([0, 0, (seat_tube_od + 2*st_collar_thickness)/2])
                             sphere(r = 8);
             }
 
@@ -80,16 +92,16 @@ module bb_junction() {
 
                 orient_to(cs_end, cs_start) {
                     translate([0, 0, -cs_offset]) {
-                        sphere(d=chainstay_od + 2*extension_thickness);
-                        cylinder(h = extension_depth + cs_offset, d = chainstay_od + 2*extension_thickness);
+                        sphere(d=chainstay_od + 2*cs_collar_thickness);
+                        cylinder(h = cs_extension_depth + cs_offset, d = chainstay_od + 2*cs_collar_thickness);
                     }
 
                     // Spherical boss for bolt hole (smaller for chainstays)
                     // Rotate one side so both have counterbores on outside
-                    translate([0, 0, extension_depth - junction_socket_depth + junction_socket_depth/2])
+                    translate([0, 0, cs_extension_depth - junction_socket_depth + junction_socket_depth/2])
                         rotate([0, 0, side == 1 ? 0 : 180])  // Flip one side
                             rotate([90, 0, 0])
-                                translate([0, 0, (chainstay_od + 2*extension_thickness)/2])
+                                translate([0, 0, (chainstay_od + 2*cs_collar_thickness)/2])
                                     sphere(r = 6);
                 }
             }
@@ -100,57 +112,63 @@ module bb_junction() {
             cylinder(h = bb_bore_length *2, d = bb_shell_od + 0.5, center = true);
 
         // Down tube socket bore (only junction_socket_depth deep)
+        dt_socket_bore_start = dt_extension_depth - dt_socket_depth;
         orient_to(dt_end, dt_start)
-            translate([0, 0, extension_depth - extension_socket_depth])
-                cylinder(h = extension_socket_depth + epsilon, d = down_tube_od + socket_clearance);
+            translate([0, 0, dt_socket_bore_start])
+                cylinder(h = dt_socket_depth + epsilon, d = down_tube_od + socket_clearance);
 
         // Down tube bolt holes (M6 through-bolt)
+        dt_bolt_z = dt_extension_depth - dt_socket_depth + junction_socket_depth/2;
         orient_to(dt_end, dt_start)
-            translate([0, 0, extension_depth - extension_socket_depth + junction_socket_depth/2])
+            translate([0, 0, dt_bolt_z])
                 rotate([90, 0, 0]) {
                     // Tap hole from one side
                     translate([0, 0, (down_tube_od + socket_clearance)/2 - 2])
                         cylinder(h = m6_thread_depth, d = m6_tap_drill);
 
                     // Clearance hole from opposite side
-                    translate([0, 0, -(down_tube_od/2 + extension_thickness)])
-                        cylinder(h = down_tube_od/2 + extension_thickness - ((down_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
+                    translate([0, 0, -(down_tube_od/2 + dt_collar_thickness)])
+                        cylinder(h = down_tube_od/2 + dt_collar_thickness - ((down_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
 
                     // Counterbore for socket head
-                    translate([0, 0, -(down_tube_od/2 + extension_thickness)])
+                    translate([0, 0, -(down_tube_od/2 + dt_collar_thickness)])
                         cylinder(h = 2.5, d = 9.5);
                 }
 
         // Seat tube socket bore
+        st_socket_bore_start = st_extension_depth - st_socket_depth;
         orient_to(st_end, st_start)
-            translate([0, 0, extension_depth - extension_socket_depth])
-                cylinder(h = extension_socket_depth + epsilon, d = seat_tube_od + socket_clearance);
+            translate([0, 0, st_socket_bore_start])
+                cylinder(h = st_socket_depth + epsilon, d = seat_tube_od + socket_clearance);
 
         // Seat tube bolt holes (M6 through-bolt)
+        st_bolt_z = st_extension_depth - st_socket_depth + junction_socket_depth/2;
         orient_to(st_end, st_start)
-            translate([0, 0, extension_depth - extension_socket_depth + junction_socket_depth/2])
+            translate([0, 0, st_bolt_z])
                 rotate([90, 0, 0]) {
                     // Tap hole from one side
                     translate([0, 0, (seat_tube_od + socket_clearance)/2 - 2])
                         cylinder(h = m6_thread_depth, d = m6_tap_drill);
 
                     // Clearance hole from opposite side
-                    translate([0, 0, -(seat_tube_od/2 + extension_thickness)])
-                        cylinder(h = seat_tube_od/2 + extension_thickness - ((seat_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
+                    translate([0, 0, -(seat_tube_od/2 + st_collar_thickness)])
+                        cylinder(h = seat_tube_od/2 + st_collar_thickness - ((seat_tube_od + socket_clearance)/2 - 2), d = joint_bolt_diameter + 0.5);
 
                     // Counterbore for socket head
-                    translate([0, 0, -(seat_tube_od/2 + extension_thickness)])
+                    translate([0, 0, -(seat_tube_od/2 + st_collar_thickness)])
                         cylinder(h = 2.5, d = 9.5);
                 }
 
         // Chainstay sockets - both sides
+        cs_socket_bore_start = cs_extension_depth - junction_socket_depth;
+        cs_bolt_z = cs_extension_depth - junction_socket_depth + junction_socket_depth/2;
         for (side = [-1, 1]) {
             cs_end = [0, side * cs_spread, bb_chainstay_z];
             cs_start = dropout + [0, side * cs_spread, dropout_chainstay_z];
 
             // Socket bore
             orient_to(cs_end, cs_start)
-                translate([0, 0, extension_depth - junction_socket_depth])
+                translate([0, 0, cs_socket_bore_start])
                     cylinder(h = junction_socket_depth + epsilon, d = chainstay_od + socket_clearance);
 
             // Bolt holes (M5 through-bolt, smaller for chainstays)
@@ -161,7 +179,7 @@ module bb_junction() {
             m5_thread_depth = 10;
 
             orient_to(cs_end, cs_start)
-                translate([0, 0, extension_depth - junction_socket_depth + junction_socket_depth/2])
+                translate([0, 0, cs_bolt_z])
                     rotate([0, 0, side == 1 ? 0 : 180])  // Flip one side
                         rotate([90, 0, 0]) {
                             // Tap hole from one side
@@ -169,11 +187,11 @@ module bb_junction() {
                                 cylinder(h = m5_thread_depth, d = m5_tap_drill);
 
                             // Clearance hole from opposite side
-                            translate([0, 0, -(chainstay_od/2 + extension_thickness)])
-                                cylinder(h = chainstay_od/2 + extension_thickness - ((chainstay_od + socket_clearance)/2 - 2), d = m5_clearance);
+                            translate([0, 0, -(chainstay_od/2 + cs_collar_thickness)])
+                                cylinder(h = chainstay_od/2 + cs_collar_thickness - ((chainstay_od + socket_clearance)/2 - 2), d = m5_clearance);
 
                             // Counterbore for socket head (on outside)
-                            translate([0, 0, -(chainstay_od/2 + extension_thickness)])
+                            translate([0, 0, -(chainstay_od/2 + cs_collar_thickness)])
                                 cylinder(h = 2.5, d = m5_head_dia);
                         }
         }
