@@ -30,36 +30,36 @@ module tube_core(tube_size, length, through_holes = []) {
 
 // Creates the end of a tube with either socket extension or inner sleeve mounting
 // type: "socket" for insertion into junction, "inner_sleeve" for joining tube sections
-module tube_end(tube_size, length, type = "socket") {
+module tube_end(tube_size, type = "socket") {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_thickness(tube_size);
     socket_depth = tube_socket_depth(tube_size);
+    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
     bolt_size = tube_bolt_size(tube_size);
     through_r = bolt_through_radius(bolt_size);
 
-    if (type == "socket") {
-        // Socket extension: solid cylinder that fits into junction socket
-        // Length of socket extension
-        cylinder(r = outer_r - 0.25, h = socket_depth);  // 0.25mm clearance for fit
-    } else if (type == "inner_sleeve") {
-        // Inner sleeve mounting: tube section with 2 bolt holes
-        hole_offset = length / 3;  // Position holes 1/3 from end
+    height = (type == "socket") ? socket_depth : inner_sleeve_depth;
+    
+    difference() {
+        cylinder(r = outer_r, h = height);
 
-        difference() {
-            // Tube section
-            cylinder(r = outer_r, h = length);
+        // Bore
+        translate([0, 0, -0.01])
+            cylinder(r = outer_r - thickness, h = height + 0.02);
 
-            // Bore
-            translate([0, 0, -0.01])
-                cylinder(r = outer_r - thickness, h = length + 0.02);
+        if (type == "socket") {
+            translate([0, 0, height / 2])
+                rotate([90, 0, 0])
+                    cylinder(r = through_r, h = outer_r * 3, center = true);
+        } else if (type == "inner_sleeve") {
+            translate([0, 0, height / 3])
+                rotate([90, 0, 0])
+                    cylinder(r = through_r, h = outer_r * 3, center = true);
 
-            // Two bolt holes at 90 degrees
-            for (angle = [0, 90]) {
-                rotate([0, 0, angle])
-                    translate([outer_r / 2, 0, hole_offset])
-                        rotate([90, 0, 0])
-                            cylinder(r = through_r, h = outer_r * 2, center = true);
-            }
+            rotate([0, 0, 90])
+                translate([0, 0, 2 * height / 3])
+                    rotate([90, 0, 0])
+                        cylinder(r = through_r, h = outer_r * 3, center = true);
         }
     }
 }
@@ -76,7 +76,7 @@ module tube(tube_size, length, start_type = "socket", end_type = "socket") {
     core_length = length - start_length - end_length;
 
     // Start end
-    tube_end(tube_size, start_length, start_type);
+    tube_end(tube_size, start_type);
 
     // Core
     translate([0, 0, start_length])
@@ -84,7 +84,7 @@ module tube(tube_size, length, start_type = "socket", end_type = "socket") {
 
     // End end
     translate([0, 0, start_length + core_length])
-        tube_end(tube_size, end_length, end_type);
+        tube_end(tube_size, end_type);
 }
 
 // Helper function to calculate number of sections needed for a tube

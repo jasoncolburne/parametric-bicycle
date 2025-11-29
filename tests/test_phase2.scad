@@ -33,7 +33,7 @@ translate([spacing * 3, 0, 0])
 echo("Test 5: Down tube with rivnut holes at 30mm, 104mm, 130mm");
 translate([0, spacing, 0])
     difference() {
-        tube_core(DOWN_TUBE, 160);
+        tube_core(DOWN_TUBE, 234);
         // Rivnut holes for battery mount (74mm spacing, 2 pairs)
         rivnut_hole(30);
         rivnut_hole(30 + 74);

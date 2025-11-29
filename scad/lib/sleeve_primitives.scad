@@ -7,16 +7,24 @@ include <helpers.scad>
 
 // Creates a metal sleeve around a tube with options for collars
 // Combines base sleeve cylinder with multiple oriented collars
-module sleeve(tube_size, collars) {
+module sleeve(tube_size, height, collars) {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_collar_thickness(tube_size);
+    clearance = tube_socket_clearance(tube_size);
 
-    // Base sleeve cylinder
-    cylinder(r = outer_r + thickness, h = 100);  // Default 100mm sleeve length
+    difference() {
+        union() {
+            // Base sleeve cylinder
+            cylinder(r = outer_r + thickness, h = height);  // Default 100mm sleeve length
 
-    // Add all collars
-    for (collar = collars) {
-        sleeve_collar(collar);
+            // Add all collars
+            for (collar = collars) {
+                sleeve_collar(collar);
+            }
+        }
+    
+        translate([0, 0, -height])
+            cylinder(r = outer_r + clearance, h = 3 * height);
     }
 }
 
@@ -24,27 +32,35 @@ module sleeve(tube_size, collars) {
 // Has 4 through holes (2 per tube section) for M6/M5 bolts
 module inner_sleeve(tube_size) {
     outer_r = tube_outer_radius(tube_size);
-    thickness = tube_collar_thickness(tube_size);
+    tube_thickness = tube_thickness(tube_size);
+    half_length = tube_inner_sleeve_depth(tube_size);
+    thickness = tube_inner_sleeve_thickness(tube_size);
     bolt_size = tube_bolt_size(tube_size);
-    clearance_r = bolt_clearance_radius(bolt_size);
+    clearance = tube_inner_sleeve_clearance(tube_size);
+    through_r = bolt_through_radius(bolt_size);
 
     // Standard sleeve length - fits in both socket ends
-    sleeve_length = 60;
-    hole_spacing = 15;  // Distance from each end to bolt hole
+    sleeve_length = half_length * 2;
 
     difference() {
         // Sleeve cylinder
-        cylinder(r = outer_r - 0.25, h = sleeve_length);  // 0.25mm clearance for fit
+        cylinder(r = outer_r - tube_thickness - clearance, h = sleeve_length);
 
         // Through holes - 2 at each end (90 degrees apart for strength)
-        for (z = [hole_spacing, sleeve_length - hole_spacing]) {
-            for (angle = [0, 90]) {
-                rotate([0, 0, angle])
-                    translate([outer_r / 2, 0, z])
-                        rotate([90, 0, 0])
-                            cylinder(r = clearance_r, h = outer_r * 2, center = true);
-            }
+        hole_height_unit = sleeve_length / 6;    
+        for (x = [1, 4]) { 
+            translate([0, 0, hole_height_unit * x])
+                rotate([90, 0, 0])
+                    cylinder(r = through_r, h = outer_r * 3, center = true);
+
+            rotate([0, 0, 90])
+                translate([0, 0, hole_height_unit * (x + 1)])
+                    rotate([90, 0, 0])
+                        cylinder(r = through_r, h = outer_r * 3, center = true);
         }
+
+        translate([0, 0, -0.01])
+            cylinder(r = outer_r - tube_thickness - thickness - clearance, h = sleeve_length + 0.02);
     }
 }
 

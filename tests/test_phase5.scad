@@ -14,7 +14,7 @@ translate([0, 0, 0]) {
     collars = [
         Collar(DOWN_TUBE, [0, 0, 0], 50)
     ];
-    sleeve(DOWN_TUBE, collars);
+    sleeve(DOWN_TUBE, 100, collars);
 }
 
 // Test 2: Sleeve with two collars at 90 degrees
@@ -24,7 +24,7 @@ translate([spacing, 0, 0]) {
         Collar(DOWN_TUBE, [0, 0, 0], 30),
         Collar(DOWN_TUBE, [0, 90, 0], 70)
     ];
-    sleeve(DOWN_TUBE, collars);
+    sleeve(DOWN_TUBE, 100, collars);
 }
 
 // Test 3: Sleeve with three collars
@@ -35,7 +35,7 @@ translate([spacing * 2, 0, 0]) {
         Collar(SEAT_TUBE, [0, 0, 120], 50),
         Collar(SEAT_TUBE, [0, 0, 240], 75)
     ];
-    sleeve(SEAT_TUBE, collars);
+    sleeve(SEAT_TUBE, 100, collars);
 }
 
 // Test 4: Sleeve with complex collar orientations
@@ -46,7 +46,7 @@ translate([0, spacing, 0]) {
         Collar(TOP_TUBE, [30, 60, 0], 50),
         Collar(TOP_TUBE, [0, 45, 90], 80)
     ];
-    sleeve(TOP_TUBE, collars);
+    sleeve(TOP_TUBE, 100, collars);
 }
 
 // Test 5: Four-way junction sleeve
@@ -56,9 +56,9 @@ translate([spacing, spacing, 0]) {
         Collar(DOWN_TUBE, [0, 0, 0], 50),
         Collar(SEAT_TUBE, [0, 90, 0], 50),
         Collar(TOP_TUBE, [0, 180, 0], 50),
-        Collar(SEAT_STAY, [0, 270, 0], 50)
+        Collar(SEATSTAY, [0, 270, 0], 50)
     ];
-    sleeve(DOWN_TUBE, collars);
+    sleeve(DOWN_TUBE, 100, collars);
 }
 
 echo("=== Dimension Checks ===");
