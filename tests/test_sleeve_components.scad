@@ -39,19 +39,28 @@ translate([spacing * 3, 0, 0]) {
 // Test 5: Pinch bolt with M6 bolt
 echo("Test 5: Pinch bolt - M6, 20mm length, 1mm separation");
 translate([0, spacing, 0]) {
-    sleeve_pinch_bolt(M6_BOLT, 20, 1);
+    difference() {
+        sleeve_pinch_bolt(M6_BOLT, 20, 1);
+        sleeve_pinch_bolt(M6_BOLT, 20, 1, render_negative = true);
+    }
 }
 
 // Test 6: Pinch bolt with M5 bolt
 echo("Test 6: Pinch bolt - M5, 15mm length, 0.8mm separation");
 translate([spacing, spacing, 0]) {
-    sleeve_pinch_bolt(M5_BOLT, 15, 0.8);
+    difference() {
+        sleeve_pinch_bolt(M5_BOLT, 15, 0.8);
+        sleeve_pinch_bolt(M5_BOLT, 15, 0.8, render_negative = true);
+    }
 }
 
 // Test 7: Pinch bolt with wider separation
 echo("Test 7: Pinch bolt - M6, 25mm length, 2mm separation");
 translate([spacing * 2, spacing, 0]) {
-    sleeve_pinch_bolt(M6_BOLT, 25, 2);
+    difference() {
+        sleeve_pinch_bolt(M6_BOLT, 25, 2);
+        sleeve_pinch_bolt(M6_BOLT, 25, 2, render_negative = true);
+    }
 }
 
 // Test 8: Combined assembly - collar with pinch bolt
@@ -66,8 +75,12 @@ translate([spacing * 3, spacing, 0]) {
     extension_depth = tube_extension_depth(DOWN_TUBE);
 
     translate([outer_r + collar_thickness, 0, extension_depth/2])
-        rotate([90, 0, 0])
-            sleeve_pinch_bolt(M6_BOLT, 30, 1);
+        rotate([90, 0, 0]) {
+            difference() {
+                sleeve_pinch_bolt(M6_BOLT, 30, 1);
+                sleeve_pinch_bolt(M6_BOLT, 30, 1, render_negative = true);
+            }
+        }
 }
 
 echo("=== Dimension Checks ===");

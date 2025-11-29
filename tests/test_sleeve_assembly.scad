@@ -4,7 +4,7 @@ include <../scad/config.scad>
 include <../scad/lib/sleeve_primitives.scad>
 include <../scad/lib/collar.scad>
 
-spacing = 150;
+spacing = 200;
 
 echo("=== Phase 5 Complete Sleeve Assembly Tests ===");
 
@@ -65,16 +65,16 @@ translate([spacing, spacing, 0]) {
 echo("Test 6: Pinched sleeve with single collar and pinch bolt");
 translate([spacing * 2, spacing, 0]) {
     collars = [
-        Collar(SEAT_TUBE, [0, 0, 0], 50)
+        Collar(SEAT_TUBE, [-90, 0, 0], 50)
     ];
-    pinched_sleeve(SEAT_TUBE, 100, 50, collars);
+    pinched_sleeve(SEAT_TUBE, 100, 50, collars, 2);
 }
 
 // Test 7: Tapped sleeve with single collar and two taps
 echo("Test 7: Tapped sleeve with single collar and two tap positions");
 translate([0, spacing * 2, 0]) {
     collars = [
-        Collar(DOWN_TUBE, [0, 0, 0], 50)
+        Collar(DOWN_TUBE, [90, 0, 0], 50)
     ];
     taps = [30, 70];  // Two tap positions along sleeve
     tapped_sleeve(DOWN_TUBE, 100, taps, collars);
@@ -84,11 +84,11 @@ translate([0, spacing * 2, 0]) {
 echo("Test 8: Tapped sleeve - three collars with three taps");
 translate([spacing, spacing * 2, 0]) {
     collars = [
-        Collar(TOP_TUBE, [0, 0, 0], 25),
-        Collar(TOP_TUBE, [0, 0, 120], 50),
-        Collar(TOP_TUBE, [0, 0, 240], 75)
+        Collar(TOP_TUBE, [90, 0, 0], 66),
+        Collar(TOP_TUBE, [90, 0, 240], 50),
+        Collar(TOP_TUBE, [90, 0, 120], 75)
     ];
-    taps = [20, 50, 80];
+    taps = [20, 80];
     tapped_sleeve(TOP_TUBE, 100, taps, collars);
 }
 

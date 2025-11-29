@@ -97,7 +97,7 @@ module sleeve_collar(collar) {
 
                     // Spherical boss on tap side
                     translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                        rotate([90, 0, 0])
+                        rotate([0, 90, 0])
                             translate([0, 0, outer_r + collar_thickness])
                                 sphere(r = boss_r);
                 }
@@ -108,7 +108,7 @@ module sleeve_collar(collar) {
 
                 // Through-bolt holes (M6 or M5)
                 translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                    rotate([90, 0, 0]) {
+                    rotate([0, 90, 0]) {
                         // Tap hole from one side
                         translate([0, 0, outer_r + socket_clearance - 2])
                             cylinder(r = tap_r, h = 12);
@@ -128,53 +128,70 @@ module sleeve_collar(collar) {
 
 // Creates a pinch bolt boss for sleeve clamping
 // Separated by a split plane for pinch clamp action
-module sleeve_pinch_bolt(bolt_size, bolt_length, separation) {
+module sleeve_pinch_bolt(bolt_size, bolt_length, separation, render_negative = false) {
     tap_r = bolt_tap_radius(bolt_size);
     clearance_r = bolt_clearance_radius(bolt_size);
-    counterbore_r = bolt_counterbore_radius(bolt_size);
-    counterbore_d = bolt_counterbore_depth(bolt_size);
     boss_r = bolt_boss_radius(bolt_size);
 
-    difference() {
-        // Spherical boss
-        sphere(r = boss_r);
+    height = bolt_length - boss_r / 2;
+    
+    if (render_negative) {
+        rotate([180, 0, 0])
+            translate([0, 0, height / 2])
+                cylinder(r = boss_r, h = height * 3);            
 
         // Split plane (gap for pinch action)
-        translate([0, -separation/2, -boss_r])
-            cube([boss_r * 3, separation, boss_r * 2], center = true);
+        cube([boss_r * 3, boss_r * 3, separation], center = true);
 
         // Tap hole through center
         cylinder(r = tap_r, h = bolt_length, center = true);
 
-        // Counterbore on one side
-        translate([0, 0, -bolt_length/2])
-            cylinder(r = counterbore_r, h = counterbore_d);
+        // Clearance hole on one side
+        rotate([180, 0, 0])
+            cylinder(r = clearance_r, h = height);
+    } else {
+        translate([0, 0, height / 2])
+            sphere(r = boss_r);
+            
+        cylinder(r = boss_r, h = height, center = true);
     }
+}
+
+module transform_pinch_bolt(height, radius) {
+    translate([0, 0, height])
+        rotate([90, 0, 0])
+            translate([0, 0, radius])
+                rotate([0, 90, 180])
+                    children();
 }
 
 // Creates a pinched sleeve for clamp mounting
 // Uses difference() to subtract pinch slot from base sleeve
-module pinched_sleeve(tube_size, height, pinch_slot_depth, collars) {
+module pinched_sleeve(tube_size, height, pinch_slot_depth, collars, bolt_count = 1) {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_collar_thickness(tube_size);
     separation = tube_pinch_separation(tube_size);
     bolt_size = tube_bolt_size(tube_size);
-
-    // Pinch slot width (typically 2-3mm for access)
-    slot_width = 2;
+    bolt_unit = pinch_slot_depth / (bolt_count + 1);
 
     difference() {
         // Base sleeve with pinch bolt as child
         sleeve(tube_size, height, collars) {
-            // Pinch bolt positioned at pinch slot
-            translate([outer_r + thickness, 0, pinch_slot_depth])
-                rotate([0, 90, 0])
-                    sleeve_pinch_bolt(bolt_size, outer_r + thickness + 10, separation);
+            for (i = [1:bolt_count]) {
+                // Pinch bolt positioned at pinch slot   
+                transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
+                    sleeve_pinch_bolt(bolt_size, outer_r, separation);
+            }
         }
 
         // Pinch slot (vertical cut through sleeve wall)
-        translate([-(slot_width/2), -(outer_r + thickness + 1), 0])
-            cube([slot_width, (outer_r + thickness + 1) * 2, height]);
+        translate([-separation / 2, -(outer_r + thickness + 0.01), height - pinch_slot_depth])
+            cube([separation, outer_r + thickness + 0.01, pinch_slot_depth * 2]);
+            
+        for (i = [1:bolt_count]) {
+            transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
+                sleeve_pinch_bolt(bolt_size, outer_r, separation, render_negative = true);        
+        }
     }
 }
 

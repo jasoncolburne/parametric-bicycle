@@ -27,7 +27,7 @@ M5_BOLT = BoltSize(
     2.75,   // clearance_radius (5.5mm clearance hole)
     4.25,   // counterbore_radius (8.5mm socket head)
     2.5,    // counterbore_depth
-    6,      // boss_radius
+    4.25,   // boss_radius
     2.75    // through_radius (5.5mm in plastic)
 );
 
@@ -36,6 +36,6 @@ M6_BOLT = BoltSize(
     3.25,   // clearance_radius (6.5mm clearance hole)
     4.75,   // counterbore_radius (9.5mm socket head)
     2.5,    // counterbore_depth
-    8,      // boss_radius
+    4.75,    // boss_radius
     3.25    // through_radius (6.5mm in plastic)
 );
