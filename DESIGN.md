@@ -96,3 +96,9 @@ sleeve_pinch_bolt(
     bolt_length: Float, // mm
     separation: Float, // mm
 )
+
+// Creates a through hole for M5 rivnut installation in carbon fiber tube (9mm diameter, orthogonal)
+// Position specified in mm from tube origin along tube axis
+rivnut_hole(
+    z_position: Float, // mm
+)
