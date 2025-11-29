@@ -35,13 +35,15 @@ struct TubeSize {
     outer_radius: Float // mm
     thickness: Float // mm
     socket_depth: Float // mm
+    socket_clearance: Float // mm
+    extension_depth: Float // mm
     collar_thickness: Float // mm
     bolt_size: BoltSize
 }
 
 struct Collar {
     tube_size: TubeSize // size of the tube to be inserted in the collar
-    rotation: Float[3] // direction of the collar (points outward), [x, y, z]
+    rotation: Float[3] // direction of the collar (points outward), [rx, ry, rz]
 }
 
 ### Library Functions
