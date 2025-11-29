@@ -42,7 +42,7 @@ DOWN_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    90,     // extension_depth
+    70,     // extension_depth
     6,      // collar_thickness
     1.5,    // pinch_separation
     M6_BOLT // bolt_size
@@ -56,7 +56,7 @@ SEAT_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    90,     // extension_depth
+    70,     // extension_depth
     6,      // collar_thickness
     1.2,    // pinch_separation
     M6_BOLT // bolt_size
@@ -70,7 +70,7 @@ TOP_TUBE = TubeSize(
     0.25,   // inner_sleeve_clearance
     40,     // socket_depth
     0.25,   // socket_clearance
-    90,     // extension_depth
+    70,     // extension_depth
     6,      // collar_thickness
     1,      // pinch_separation
     M6_BOLT // bolt_size
@@ -84,7 +84,7 @@ CHAINSTAY = TubeSize(
     0.25,   // inner_sleeve_clearance
     30,     // socket_depth
     0.25,   // socket_clearance
-    60,     // extension_depth
+    50,     // extension_depth
     6,      // collar_thickness
     0.8,    // pinch_separation
     M5_BOLT // bolt_size (smaller bolts for chainstays)
@@ -98,7 +98,7 @@ SEATSTAY = TubeSize(
     0.25,   // inner_sleeve_clearance
     30,     // socket_depth
     0.25,   // socket_clearance
-    60,     // extension_depth
+    50,     // extension_depth
     6,      // collar_thickness
     0.7,    // pinch_separation
     M5_BOLT // bolt_size (smaller bolts for seatstays)
