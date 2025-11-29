@@ -45,6 +45,7 @@ struct TubeSize {
 struct Collar {
     tube_size: TubeSize // size of the tube to be inserted in the collar
     rotation: Float[3] // direction of the collar (points outward), [rx, ry, rz]
+    height: Float // mm - Z position along sleeve axis where collar is placed
 }
 
 ### Library Functions
