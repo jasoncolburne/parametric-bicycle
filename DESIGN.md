@@ -34,6 +34,7 @@ struct BoltSize {
 struct TubeSize {
     outer_radius: Float // mm
     thickness: Float // mm
+    inner_sleeve_depth: Float // mm
     socket_depth: Float // mm
     socket_clearance: Float // mm
     extension_depth: Float // mm
@@ -101,4 +102,20 @@ sleeve_pinch_bolt(
 // Position specified in mm from tube origin along tube axis
 rivnut_hole(
     z_position: Float, // mm
+)
+
+// Creates a single section of a split tube for printing
+// Automatically determines end types based on section number
+// Uses global max_tube_length for maximum section length
+tube_section(
+    tube_size: TubeSize,
+    section_num: Int, // 0-indexed section number
+    total_length: Float, // mm - total length of complete tube
+)
+
+// Helper function to calculate number of sections needed for a tube
+// Uses global max_tube_length for maximum section length
+tube_num_sections(
+    tube_size: TubeSize,
+    total_length: Float, // mm
 )

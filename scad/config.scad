@@ -9,6 +9,13 @@ include <lib/tube_sizes.scad>
 include <lib/helpers.scad>
 
 // =============================================================================
+// FABRICATION CONSTRAINTS
+// =============================================================================
+// FibreSeeker 3 build volume
+fibreseeker_max_z = 245;  // Maximum Z height in mm
+max_tube_length = fibreseeker_max_z;  // Maximum printable tube length
+
+// =============================================================================
 // RIDER PARAMETERS
 // =============================================================================
 rider_height = 173;
