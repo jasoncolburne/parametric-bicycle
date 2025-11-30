@@ -124,7 +124,7 @@ module tube_section(tube_size, section_num, total_length, through_holes = []) {
     tube(tube_size, section_length, start_type, end_type, through_holes);
 }
 
-module sectioned_tube(tube_size, total_length, through_holes = []) {
+module sectioned_tube(tube_size, total_length, through_holes = [], debug_color = "invisible", body_color = "white") {
     socket_depth = tube_socket_depth(tube_size);
     inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
     num_sections = tube_num_sections(tube_size, total_length);
@@ -133,22 +133,41 @@ module sectioned_tube(tube_size, total_length, through_holes = []) {
     // Each section overlaps with neighbors at joint regions
     section_length = total_length / num_sections;
 
-    for (i = [0:num_sections-1]) {
-        // Position: first section starts at 0, subsequent sections positioned to connect
-        // Section 0: starts at 0
-        // Section 1+: positioned at end of previous section's usable length
-        section_start_z = i * section_length;
+    color(body_color)
+        for (i = [0:num_sections-1]) {
+            // Position: first section starts at 0, subsequent sections positioned to connect
+            // Section 0: starts at 0
+            // Section 1+: positioned at end of previous section's usable length
+            section_start_z = i * section_length;
 
-        // Filter through_holes to only those in this section's range
-        // Range is from section start to section start + usable length + socket/joint
-        section_holes = [
-            for (z = through_holes)
-                if (z >= section_start_z && z < section_start_z + section_length)
-                    z - section_start_z
-        ];
-        
-        // Position and render section
-        translate([0, 0, section_start_z])
-            tube_section(tube_size, i, total_length, section_holes);
+            // Filter through_holes to only those in this section's range
+            // Range is from section start to section start + usable length + socket/joint
+            section_holes = [
+                for (z = through_holes)
+                    if (z >= section_start_z && z < section_start_z + section_length)
+                        z - section_start_z
+            ];
+
+            // Position and render section
+            translate([0, 0, section_start_z])
+                tube_section(tube_size, i, total_length, section_holes);
+        }
+
+    // Debug cylinders at socket-to-core junctions only
+    if (debug_color != "invisible") {
+        debug_cylinder_d = 5;
+        debug_cylinder_length = 200;
+
+        color(debug_color, 0.8) {
+            // Socket-to-core junction at start
+            translate([0, 0, 0])
+                rotate([90, 0, 0])
+                    cylinder(h = debug_cylinder_length, d = debug_cylinder_d, center = true);
+
+            // Core-to-socket junction at end
+            translate([0, 0, total_length])
+                rotate([90, 0, 0])
+                    cylinder(h = debug_cylinder_length, d = debug_cylinder_d, center = true);
+        }
     }
 }

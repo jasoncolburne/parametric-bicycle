@@ -7,12 +7,16 @@ include <tube_sizes.scad>
 _COLLAR_TUBE_SIZE = 0;
 _COLLAR_ROTATION = 1;
 _COLLAR_HEIGHT = 2;
+_COLLAR_TRANSLATION = 3;
+_COLLAR_CAP = 4;
 
 // Constructor
-function Collar(tube_size, rotation, height) =
-    [tube_size, rotation, height];
+function Collar(tube_size, rotation, height, translation = [0, 0, 0], cap = false) =
+    [tube_size, rotation, height, translation, cap];
 
 // Accessors
 function collar_tube_size(c) = c[_COLLAR_TUBE_SIZE];
 function collar_rotation(c) = c[_COLLAR_ROTATION];
 function collar_height(c) = c[_COLLAR_HEIGHT];
+function collar_translation(c) = c[_COLLAR_TRANSLATION];
+function collar_cap(c) = c[_COLLAR_CAP];

@@ -39,8 +39,9 @@ seat_tube_angle = 72;                // Degrees from horizontal
 head_tube_length = 140;              // Physical length of head tube
 
 // Rear triangle parameters
-chainstay_horizontal_length = 460;   // BB center to rear dropout (horizontal projection)
 bb_drop = 77.5;                      // BB below rear axle line
+chainstay_to_reach_ratio = 1.23;    // Chainstay horizontal length as proportion of reach
+                                     // Typical: 1.2-1.3 for balanced handling
 
 // Additional parameters
 tt_angle = 105;                      // Top tube angle with respect to head tube
@@ -183,9 +184,11 @@ ht_unit = _ht_vec / norm(_ht_vec);
 down_tube_extension_translation = 50;
 ht_target = ht_bottom + ht_unit * down_tube_extension_translation;
 
-// Dropout position (rear axle)
-dropout_x = -sqrt(chainstay_horizontal_length * chainstay_horizontal_length - bb_drop * bb_drop);
-dropout_z = -bb_drop;
+// Dropout position (rear axle) - derived from reach proportion
+// BB drop means BB is BELOW the rear axle, so dropout Z is positive
+chainstay_horizontal_length = reach * chainstay_to_reach_ratio;
+dropout_x = -chainstay_horizontal_length;  // Behind BB (negative X)
+dropout_z = bb_drop;                       // Above BB (positive Z)
 
 // --- TUBE ANGLES AT BB JUNCTION ---
 // All angles measured from horizontal (positive = upward)
@@ -252,6 +255,11 @@ dropout_seat_stay_z = 60;  // Raised proportionally
 // --- SEAT STAY POSITIONS ---
 st_seat_stay_z = -15;  // Offset below seat tube top
 ss_spread = 35;  // Seat stay spread (narrower than chainstay)
+
+// --- SEAT TUBE JUNCTION ---
+stj_height = 60;                    // Total junction height
+stj_origin_offset = 35;             // Junction origin offset from top (for socket positioning)
+st_seat_stay_collar_height = stj_origin_offset + st_seat_stay_z;  // Collar height from junction base
 
 // --- WHEELBASE ---
 wheelbase = ht_bottom_x - dropout_x;  // Horizontal distance between axles
@@ -363,7 +371,7 @@ bb = [0, 0, 0];  // BB center at origin
 // - ss_spread
 
 // Lug dimensions
-lug_height = 100;             // Height along head tube
+lug_height = 100;
 
 _dt_vec = bb_down_tube - ht_down_tube;
 _ht_dot_dt = _ht_vec[0]*_dt_vec[0] + _ht_vec[1]*_dt_vec[1] + _ht_vec[2]*_dt_vec[2];

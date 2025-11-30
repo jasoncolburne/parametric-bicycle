@@ -48,7 +48,7 @@ HEAD_TUBE = TubeSize(
     40,                  // socket_depth
     0.25,                // socket_clearance
     70,                  // extension_depth
-    10,                   // collar_thickness
+    10,                  // collar_thickness
     1.5,                 // pinch_separation
     M5_BOLT              // bolt_size (M5 for head tube pinch)
 );

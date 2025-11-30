@@ -7,7 +7,7 @@ include <helpers.scad>
 
 // Creates a metal sleeve around a tube with options for collars
 // Combines base sleeve cylinder with multiple oriented collars
-module sleeve(tube_size, height, collars) {
+module sleeve(tube_size, height, collars, debug_color = "invisible", body_color = "silver") {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_collar_thickness(tube_size);
     clearance = tube_socket_clearance(tube_size);
@@ -15,15 +15,17 @@ module sleeve(tube_size, height, collars) {
     difference() {
         union() {
             // Base sleeve cylinder
-            cylinder(r = outer_r + thickness, h = height);
+            color(body_color)
+                cylinder(r = outer_r + thickness, h = height);
 
             // Add all collars
             for (collar = collars) {
-                sleeve_collar(collar, operation = "positive");
+                sleeve_collar(collar, operation = "positive", debug_color = debug_color, body_color = body_color);
             }
 
             // Allow injection of additional geometry (bosses, bolts)
-            children();
+            color(body_color)
+                children();
         }
 
         // Add all collars
@@ -74,10 +76,12 @@ module inner_sleeve(tube_size) {
 
 // Creates a tubular extension with socket bore for tube insertion
 // Uses Collar struct for configuration (tube_size, rotation, height)
-module sleeve_collar(collar, operation = "both") {
+module sleeve_collar(collar, operation = "both", debug_color = "invisible", body_color = "silver") {
     tube_size = collar_tube_size(collar);
     rotation = collar_rotation(collar);
     height = collar_height(collar);
+    translation = collar_translation(collar);
+    cap = collar_cap(collar);
 
     outer_r = tube_outer_radius(tube_size);
     socket_depth = tube_socket_depth(tube_size);
@@ -93,19 +97,25 @@ module sleeve_collar(collar, operation = "both") {
     boss_r = bolt_boss_radius(bolt_size);
 
     // Position and orient collar
-    translate([0, 0, height])
+    translate(translation + [0, 0, height])
         rotate(rotation) {
             difference() {
                 if (operation == "both" || operation == "positive") {
-                    union() {
-                        // Extension cylinder
-                        cylinder(r = outer_r + collar_thickness, h = extension_depth);
+                    color(body_color) {
+                        union() {
+                            // Extension cylinder
+                            cylinder(r = outer_r + collar_thickness, h = extension_depth);
 
-                        // Spherical boss on tap side
-                        translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                            rotate([0, 90, 0])
-                                translate([0, 0, outer_r + collar_thickness])
-                                    sphere(r = boss_r);
+                            // Spherical boss on tap side
+                            translate([0, 0, extension_depth - socket_depth + socket_depth/2])
+                                rotate([0, 90, 0])
+                                    translate([0, 0, outer_r + collar_thickness])
+                                        sphere(r = boss_r);
+
+                            if (cap) {
+                                sphere(r = outer_r + collar_thickness);
+                            }
+                        }
                     }
                 }
 
@@ -131,6 +141,17 @@ module sleeve_collar(collar, operation = "both") {
                                 cylinder(r = counterbore_r, h = counterbore_d);
                         }
                 }
+            }
+
+            // Debug cylinder at socket entrance
+            if (debug_color != "invisible") {
+                debug_cylinder_d = 5;
+                debug_cylinder_length = 200;
+
+                translate([0, 0, extension_depth - socket_depth])
+                    color(debug_color, 0.8)
+                        rotate([90, 0, 0])
+                            cylinder(h = debug_cylinder_length, d = debug_cylinder_d, center = true);
             }
         }
 }
@@ -183,7 +204,7 @@ module transform_pinch_bolt(height, radius) {
 // Uses difference() to subtract pinch slot from base sleeve
 // upper_tube_size: bore size above the pinch slot (clamping section)
 // lower_tube_size: bore size below the pinch slot (structural section)
-module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth, collars, bolt_count) {
+module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth, collars, bolt_count, debug_color = "invisible", body_color = "silver") {
     outer_r = tube_outer_radius(lower_tube_size);
     thickness = tube_collar_thickness(lower_tube_size);
     separation = tube_pinch_separation(lower_tube_size);
@@ -200,7 +221,7 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
     difference() {
         union() {
             // Base sleeve with pinch bolt as child
-            sleeve(lower_tube_size, height, collars) {
+            sleeve(lower_tube_size, height, collars, debug_color, body_color) {
                 for (i = [1:bolt_count]) {
                     // Pinch bolt positioned at pinch slot
                     transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
@@ -208,10 +229,11 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
                 }
             }
 
-            translate([0, 0, split_height])
-                cylinder(r = lower_bore_r, h = pinch_slot_depth);
-        }        
-        
+            color(body_color)
+                translate([0, 0, split_height])
+                    cylinder(r = lower_bore_r, h = pinch_slot_depth);
+        }
+
         // Upper bore (above split) - typically smaller diameter for seating
         translate([0, 0, split_height])
             cylinder(r = upper_bore_r, h = pinch_slot_depth * 2);
@@ -229,7 +251,7 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
 
 // Creates a tapped sleeve for bolt mounting
 // Passes bosses and bolt holes as children to base sleeve
-module tapped_sleeve(tube_size, height, taps, collars) {
+module tapped_sleeve(tube_size, height, taps, collars, debug_color = "invisible", body_color = "silver") {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_collar_thickness(tube_size);
     bolt_size = tube_bolt_size(tube_size);
@@ -242,7 +264,7 @@ module tapped_sleeve(tube_size, height, taps, collars) {
 
     difference() {
         // Base sleeve with bosses as children
-        sleeve(tube_size, height, collars) {
+        sleeve(tube_size, height, collars, debug_color, body_color) {
             // Add bosses at each tap position
             for (z = taps) {
                 translate([outer_r + thickness, 0, z])
