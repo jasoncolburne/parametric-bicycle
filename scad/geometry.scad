@@ -262,7 +262,14 @@ ss_spread = 35;  // Seat stay spread (narrower than chainstay)
 // Calculate seat stay start positions accounting for seat tube angle
 st_vec = st_top - bb_seat_tube;
 st_unit = st_vec / norm(st_vec);  // Seat tube direction unit vector
-st_seat_stay_base = st_top;  // Position at collar socket entrance (after junction translation and collar height cancel out)
+// Seat stays start such that their socket end inserts into the collar socket
+// Position the tube so socket entrance is at st_top (collar socket entrance)
+ss_socket_depth = tube_socket_depth(SEATSTAY);
+ss_extension_depth = tube_extension_depth(SEATSTAY);
+// Calculate direction from collar to dropout
+ss_dir_vec = dropout + [0, ss_spread, dropout_seat_stay_z] - st_top;
+ss_dir_unit = ss_dir_vec / norm(ss_dir_vec);
+st_seat_stay_base = st_top + (ss_extension_depth - ss_socket_depth) * ss_dir_unit;  // Move forward to socket entrance
 
 // --- WHEELBASE ---
 wheelbase = ht_bottom_x - dropout_x;  // Horizontal distance between axles
