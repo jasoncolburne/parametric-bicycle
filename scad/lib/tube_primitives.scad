@@ -34,11 +34,11 @@ module tube_end(tube_size, type = "socket") {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_thickness(tube_size);
     socket_depth = tube_socket_depth(tube_size);
-    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
+    joint_depth = tube_joint_depth(tube_size);
     bolt_size = tube_bolt_size(tube_size);
     through_r = bolt_through_radius(bolt_size);
 
-    height = (type == "socket") ? socket_depth : inner_sleeve_depth;
+    height = (type == "socket") ? socket_depth : joint_depth;
 
     difference() {
         cylinder(r = outer_r, h = height);
@@ -68,11 +68,11 @@ module tube_end(tube_size, type = "socket") {
 // through_holes: array of Z positions along tube axis for orthogonal holes
 module tube(tube_size, length, start_type = "socket", end_type = "socket", through_holes = []) {
     socket_depth = tube_socket_depth(tube_size);
-    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
+    joint_depth = tube_joint_depth(tube_size);
 
     // Calculate core length based on end types
-    start_length = (start_type == "socket") ? socket_depth : inner_sleeve_depth;
-    end_length = (end_type == "socket") ? socket_depth : inner_sleeve_depth;
+    start_length = (start_type == "socket") ? socket_depth : joint_depth;
+    end_length = (end_type == "socket") ? socket_depth : joint_depth;
     core_length = length - start_length - end_length;
 
     // Filter through_holes to only include those in the core region
@@ -95,8 +95,8 @@ module tube(tube_size, length, start_type = "socket", end_type = "socket", throu
 function tube_num_sections(tube_size, total_length) =
     let(
         socket_depth = tube_socket_depth(tube_size),
-        inner_sleeve_depth = tube_inner_sleeve_depth(tube_size),
-        usable_length_per_section = max_tube_length - socket_depth - inner_sleeve_depth
+        joint_depth = tube_joint_depth(tube_size),
+        usable_length_per_section = max_tube_length - socket_depth - joint_depth
     )
     ceil(total_length / usable_length_per_section);
 
@@ -105,7 +105,7 @@ function tube_num_sections(tube_size, total_length) =
 // Uses global max_tube_length for maximum section length
 module tube_section(tube_size, section_num, total_length, through_holes = []) {
     socket_depth = tube_socket_depth(tube_size);
-    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
+    joint_depth = tube_joint_depth(tube_size);
 
     // Calculate number of sections needed
     num_sections = tube_num_sections(tube_size, total_length);
@@ -126,7 +126,7 @@ module tube_section(tube_size, section_num, total_length, through_holes = []) {
 
 module sectioned_tube(tube_size, total_length, through_holes = [], debug_color = "invisible", body_color = "white") {
     socket_depth = tube_socket_depth(tube_size);
-    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
+    joint_depth = tube_joint_depth(tube_size);
     num_sections = tube_num_sections(tube_size, total_length);
 
     // Calculate section positions
