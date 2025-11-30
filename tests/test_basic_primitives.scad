@@ -1,6 +1,7 @@
 // Phase 2 Verification: Test tube_core, inner_sleeve, rivnut_hole
 
-include <../scad/config.scad>
+include <../scad/lib/bolt_sizes.scad>
+include <../scad/lib/tube_sizes.scad>
 include <../scad/lib/tube_primitives.scad>
 include <../scad/lib/sleeve_primitives.scad>
 include <../scad/lib/mount_primitives.scad>

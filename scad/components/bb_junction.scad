@@ -25,20 +25,20 @@ module bb_junction() {
 
             // Down tube collar
             rotate(bb_dt_collar_rotation)
-                sleeve_collar(dt_collar);
+                sleeve_collar(dt_collar, operation = "positive");
 
             // Seat tube collar
             rotate(bb_st_collar_rotation)
-                sleeve_collar(st_collar);
+                sleeve_collar(st_collar, operation = "positive");
         }
 
         // Down tube collar negative
         rotate(bb_dt_collar_rotation)
-            sleeve_collar(dt_collar, render_negative = true);
+            sleeve_collar(dt_collar, operation = "negative");
 
         // Seat tube collar negative
         rotate(bb_st_collar_rotation)
-            sleeve_collar(st_collar, render_negative = true);
+            sleeve_collar(st_collar, operation = "negative");
 
         // BB shell bore (through center, lateral)
         rotate([90, 0, 0])

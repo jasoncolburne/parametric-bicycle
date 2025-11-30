@@ -1,6 +1,8 @@
 // Phase 1 Verification: Test BoltSize and TubeSize structs
 
-include <../scad/config.scad>
+include <../scad/lib/helpers.scad>
+include <../scad/lib/bolt_sizes.scad>
+include <../scad/lib/tube_sizes.scad>
 
 // Test BoltSize accessors
 echo("=== M6 Bolt Tests ===");

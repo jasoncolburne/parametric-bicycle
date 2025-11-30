@@ -19,7 +19,7 @@ module sleeve(tube_size, height, collars) {
 
             // Add all collars
             for (collar = collars) {
-                sleeve_collar(collar);
+                sleeve_collar(collar, operation = "positive");
             }
 
             // Allow injection of additional geometry (bosses, bolts)
@@ -28,7 +28,7 @@ module sleeve(tube_size, height, collars) {
 
         // Add all collars
         for (collar = collars) {
-            sleeve_collar(collar, render_negative = true);
+            sleeve_collar(collar, operation = "negative");
         }
 
         translate([0, 0, -height])
@@ -74,7 +74,7 @@ module inner_sleeve(tube_size) {
 
 // Creates a tubular extension with socket bore for tube insertion
 // Uses Collar struct for configuration (tube_size, rotation, height)
-module sleeve_collar(collar, render_negative = false) {
+module sleeve_collar(collar, operation = "both") {
     tube_size = collar_tube_size(collar);
     rotation = collar_rotation(collar);
     height = collar_height(collar);
@@ -95,69 +95,80 @@ module sleeve_collar(collar, render_negative = false) {
     // Position and orient collar
     translate([0, 0, height])
         rotate(rotation) {
-            if (render_negative) {
-                // Socket bore
-                translate([0, 0, extension_depth - socket_depth])
-                    cylinder(r = outer_r + socket_clearance, h = 2 * socket_depth);
+            difference() {
+                if (operation == "both" || operation == "positive") {
+                    union() {
+                        // Extension cylinder
+                        cylinder(r = outer_r + collar_thickness, h = extension_depth);
 
-                // Through-bolt holes (M6 or M5)
-                translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                    rotate([0, 90, 0]) {
-                        // Tap hole from one side
-                        translate([0, 0, outer_r + socket_clearance])
-                            cylinder(r = tap_r, h = 9);
-
-                        // Clearance hole from opposite side
-                        translate([0, 0, -(outer_r + collar_thickness)])
-                            cylinder(r = clearance_r,
-                                    h = outer_r + collar_thickness - (outer_r + socket_clearance/2 - 2));
-
-                        // Counterbore for socket head
-                        translate([0, 0, -(outer_r + collar_thickness)])
-                            cylinder(r = counterbore_r, h = counterbore_d);
+                        // Spherical boss on tap side
+                        translate([0, 0, extension_depth - socket_depth + socket_depth/2])
+                            rotate([0, 90, 0])
+                                translate([0, 0, outer_r + collar_thickness])
+                                    sphere(r = boss_r);
                     }
-            } else {
-                // Extension cylinder
-                cylinder(r = outer_r + collar_thickness, h = extension_depth);
+                }
 
-                // Spherical boss on tap side
-                translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                    rotate([0, 90, 0])
-                        translate([0, 0, outer_r + collar_thickness])
-                            sphere(r = boss_r);
+                if (operation == "both" || operation == "negative") {
+                    // Socket bore
+                    translate([0, 0, extension_depth - socket_depth])
+                        cylinder(r = outer_r + socket_clearance, h = 2 * socket_depth);
+
+                    // Through-bolt holes (M6 or M5)
+                    translate([0, 0, extension_depth - socket_depth + socket_depth/2])
+                        rotate([0, 90, 0]) {
+                            // Tap hole from one side
+                            translate([0, 0, outer_r + socket_clearance])
+                                cylinder(r = tap_r, h = 9);
+
+                            // Clearance hole from opposite side
+                            translate([0, 0, -(outer_r + collar_thickness)])
+                                cylinder(r = clearance_r,
+                                        h = outer_r + collar_thickness - (outer_r + socket_clearance/2 - 2));
+
+                            // Counterbore for socket head
+                            translate([0, 0, -(outer_r + collar_thickness)])
+                                cylinder(r = counterbore_r, h = counterbore_d);
+                        }
+                }
             }
         }
 }
 
 // Creates a pinch bolt boss for sleeve clamping
 // Separated by a split plane for pinch clamp action
-module sleeve_pinch_bolt(bolt_size, bolt_length, separation, render_negative = false) {
+module sleeve_pinch_bolt(bolt_size, bolt_length, separation, operation = "both") {
     tap_r = bolt_tap_radius(bolt_size);
     clearance_r = bolt_clearance_radius(bolt_size);
     boss_r = bolt_boss_radius(bolt_size);
 
     height = bolt_length - boss_r / 2;
-    
-    if (render_negative) {
-        rotate([180, 0, 0])
-            translate([0, 0, height / 2])
-                cylinder(r = boss_r, h = height * 3);            
+    difference() {
+        if (operation == "both" || operation == "positive") {
+            union() {
+                translate([0, 0, height / 2])
+                    sphere(r = boss_r);
+                    
+                cylinder(r = boss_r, h = height, center = true);
+            }
+        }
 
-        // Split plane (gap for pinch action)
-        cube([boss_r * 3, boss_r * 3, separation], center = true);
+        if (operation == "both" || operation == "negative") {
+            rotate([180, 0, 0])
+                translate([0, 0, height / 2])
+                    cylinder(r = boss_r, h = height * 3);            
 
-        // Tap hole through center
-        cylinder(r = tap_r, h = bolt_length, center = true);
+            // Split plane (gap for pinch action)
+            cube([boss_r * 3, boss_r * 3, separation], center = true);
 
-        // Clearance hole on one side
-        rotate([180, 0, 0])
-            cylinder(r = clearance_r, h = height);
-    } else {
-        translate([0, 0, height / 2])
-            sphere(r = boss_r);
-            
-        cylinder(r = boss_r, h = height, center = true);
-    }
+            // Tap hole through center
+            cylinder(r = tap_r, h = bolt_length, center = true);
+
+            // Clearance hole on one side
+            rotate([180, 0, 0])
+                cylinder(r = clearance_r, h = height);
+        }
+    }    
 }
 
 module transform_pinch_bolt(height, radius) {
@@ -193,7 +204,7 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
                 for (i = [1:bolt_count]) {
                     // Pinch bolt positioned at pinch slot
                     transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
-                        sleeve_pinch_bolt(bolt_size, outer_r, separation);
+                        sleeve_pinch_bolt(bolt_size, outer_r, separation, operation = "positive");
                 }
             }
 
@@ -211,7 +222,7 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
 
         for (i = [1:bolt_count]) {
             transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
-                sleeve_pinch_bolt(bolt_size, outer_r, separation, render_negative = true);
+                sleeve_pinch_bolt(bolt_size, outer_r, separation, operation = "negative");
         }
     }
 }

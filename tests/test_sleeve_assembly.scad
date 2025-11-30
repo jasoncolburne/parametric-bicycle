@@ -1,6 +1,5 @@
 // Phase 5 Verification: Test complete sleeve assembly
 
-include <../scad/config.scad>
 include <../scad/lib/sleeve_primitives.scad>
 include <../scad/lib/collar.scad>
 
