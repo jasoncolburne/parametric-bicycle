@@ -252,14 +252,17 @@ dropout = [dropout_x, 0, dropout_z];
 dropout_chainstay_z = 30;  // Raised to clear axle
 dropout_seat_stay_z = 60;  // Raised proportionally
 
-// --- SEAT STAY POSITIONS ---
-st_seat_stay_z = -15;  // Offset below seat tube top
-ss_spread = 35;  // Seat stay spread (narrower than chainstay)
-
 // --- SEAT TUBE JUNCTION ---
 stj_height = 60;                    // Total junction height
-stj_origin_offset = 35;             // Junction origin offset from top (for socket positioning)
-st_seat_stay_collar_height = stj_origin_offset + st_seat_stay_z;  // Collar height from junction base
+st_seat_stay_collar_height = 40;             // Junction origin offset from top (for socket positioning)
+
+// --- SEAT STAY POSITIONS ---
+ss_spread = 35;  // Seat stay spread (narrower than chainstay)
+
+// Calculate seat stay start positions accounting for seat tube angle
+st_vec = st_top - bb_seat_tube;
+st_unit = st_vec / norm(st_vec);  // Seat tube direction unit vector
+st_seat_stay_base = st_top;  // Position at collar socket entrance (after junction translation and collar height cancel out)
 
 // --- WHEELBASE ---
 wheelbase = ht_bottom_x - dropout_x;  // Horizontal distance between axles
@@ -281,8 +284,8 @@ cs_start = [0, cs_spread, bb_chainstay_z];
 cs_end = dropout + [0, cs_spread, dropout_chainstay_z];
 chainstay_length = norm(cs_end - cs_start);
 
-// Seat stays: Seat tube top to dropout (with spread)
-ss_start = st_top + [0, ss_spread, st_seat_stay_z];
+// Seat stays: Seat tube junction collar position to dropout (with spread)
+ss_start = st_seat_stay_base + [0, ss_spread, 0];
 ss_end = dropout + [0, ss_spread, dropout_seat_stay_z];
 seat_stay_length = norm(ss_end - ss_start);
 

@@ -8,9 +8,9 @@ include <../lib/collar.scad>
 include <../lib/sleeve_primitives.scad>
 
 module seat_tube_junction_core(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
-    // Seat stay world positions
-    ss_left_start = st_top + [-ss_spread, 0, st_seat_stay_z];
-    ss_right_start = st_top + [ss_spread, 0, st_seat_stay_z];
+    // Seat stay world positions (from geometry.scad, accounting for seat tube angle)
+    ss_left_start = st_seat_stay_base + [-ss_spread, 0, 0];
+    ss_right_start = st_seat_stay_base + [ss_spread, 0, 0];
     ss_left_end = dropout + [-ss_spread, 0, dropout_seat_stay_z];
     ss_right_end = dropout + [ss_spread, 0, dropout_seat_stay_z];
 
@@ -31,7 +31,7 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
 
 // Render for preview
 module seat_tube_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
-    translate([0, 0, -stj_origin_offset])
+    translate([0, 0, -st_seat_stay_collar_height])
         rotate([0, 0, 90])
             seat_tube_junction_core(debug_color, body_color, alpha);
 }

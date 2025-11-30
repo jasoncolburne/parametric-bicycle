@@ -96,12 +96,10 @@ module frame_assembly() {
             sectioned_tube(CHAINSTAY, chainstay_length, debug_color = debug_chainstay, body_color = color_plastic);
 
     // --- SEAT STAYS ---
-    // Connect from st_top area to dropout area
-    // Keep at ss_spread for structural rigidity (no convergence with chainstay)
-    // Tube starts at socket entrance (Z=5mm), inserts 25mm into socket
-    // Tube bolt at 12.5mm from start aligns with junction bolt at Z=17.5 (socket center)
+    // Connect from seat tube junction collar to dropout
+    // Positioned along seat tube direction to align with angled seat tube
     for (side = [-1, 1])
-        orient_to(st_top + [0, side * ss_spread, st_seat_stay_z],
+        orient_to(st_seat_stay_base + [0, side * ss_spread, 0],
                   dropout + [0, side * ss_spread, dropout_seat_stay_z])
             sectioned_tube(SEATSTAY, seat_stay_length, debug_color = debug_seatstay, body_color = color_plastic);
 
