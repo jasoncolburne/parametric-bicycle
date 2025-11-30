@@ -12,7 +12,7 @@ include <../lib/sleeve_primitives.scad>
 bb_wall = 6;                 // Wall thickness around BB shell
 bb_bore_length = 130;        // Total pedal bore length (e-bike mid-drive clearance)
 
-module bb_junction(debug_color = "invisible", body_color = "silver") {
+module bb_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
     // Use collar configuration from geometry.scad
     dt_collar = Collar(DOWN_TUBE, bb_dt_collar_internal_rotation, bb_dt_collar_height);
     st_collar = Collar(SEAT_TUBE, bb_st_collar_internal_rotation, bb_st_collar_height);
@@ -20,17 +20,17 @@ module bb_junction(debug_color = "invisible", body_color = "silver") {
     difference() {
         union() {
             // Central cylinder for BB shell
-            color(body_color)
+            color(body_color, alpha)
                 rotate([90, 0, 0])
                     cylinder(h = bb_bore_length, d = bb_shell_od + 2*bb_wall, center = true);
 
             // Down tube collar
             rotate(bb_dt_collar_rotation)
-                sleeve_collar(dt_collar, operation = "positive", debug_color = debug_color, body_color = body_color);
+                sleeve_collar(dt_collar, operation = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
 
             // Seat tube collar
             rotate(bb_st_collar_rotation)
-                sleeve_collar(st_collar, operation = "positive", debug_color = debug_color, body_color = body_color);
+                sleeve_collar(st_collar, operation = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
         }
 
         // Down tube collar negative

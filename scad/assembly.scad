@@ -45,7 +45,7 @@ use <lib/tube_primitives.scad>
 module frame_assembly() {
 
     // --- BB JUNCTION ---
-    bb_junction(debug_color = debug_bb_junction, body_color = color_metal);
+    bb_junction(debug_color = debug_bb_junction, body_color = color_metal, alpha = alpha_metal);
 
     // --- DOWN TUBE ---
     // Positioned from BB junction to head tube lug
@@ -80,13 +80,13 @@ module frame_assembly() {
     // stj_height = 60, so place junction at (actual_length - 60) along tube
     orient_to(bb_seat_tube, st_top)
         translate([0, 0, norm(st_top - bb_seat_tube)])
-            seat_tube_junction(debug_color = debug_seat_tube_junction, body_color = color_metal);
+            seat_tube_junction(debug_color = debug_seat_tube_junction, body_color = color_metal, alpha = alpha_metal);
 
     // --- SEAT TUBE MID-JUNCTION ---
     // Position at end of top tube, oriented along top tube direction
     orient_to(ht_top_tube, st_top_tube)
         translate([0, 0, top_tube_length])
-            seat_tube_mid_junction(debug_color = debug_seat_tube_mid_junction, body_color = color_metal);
+            seat_tube_mid_junction(debug_color = debug_seat_tube_mid_junction, body_color = color_metal, alpha = alpha_metal);
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area

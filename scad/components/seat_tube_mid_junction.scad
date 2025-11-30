@@ -10,7 +10,7 @@ include <../lib/collar.scad>
 // Junction dimensions
 stmj_height = 70;            // Height of junction sleeve on seat tube
 
-module seat_tube_mid_junction(debug_color = "invisible", body_color = "silver") {
+module seat_tube_mid_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
     // Sleeve on seat tube with extension for top tube socket
     // Extension points in -tt_unit direction (toward head tube)
     // Sleeve rotated to align with seat tube direction
@@ -41,7 +41,7 @@ module seat_tube_mid_junction(debug_color = "invisible", body_color = "silver") 
         rotate(sleeve_rotation - collar_rotation)
             translate([0, 0, - stmj_height / 2])
                 // Tapped sleeve with top tube collar
-                tapped_sleeve(SEAT_TUBE, stmj_height, [tap_unit, tap_unit * 2], collars, debug_color, body_color);
+                tapped_sleeve(SEAT_TUBE, stmj_height, [tap_unit, tap_unit * 2], collars, debug_color, body_color, alpha);
 }
 
 // Render for preview

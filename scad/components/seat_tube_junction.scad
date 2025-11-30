@@ -7,7 +7,7 @@ include <../geometry.scad>
 include <../lib/collar.scad>
 include <../lib/sleeve_primitives.scad>
 
-module seat_tube_junction_core(debug_color = "invisible", body_color = "silver") {
+module seat_tube_junction_core(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
     // Seat stay world positions
     ss_left_start = st_top + [-ss_spread, 0, st_seat_stay_z];
     ss_right_start = st_top + [ss_spread, 0, st_seat_stay_z];
@@ -26,14 +26,14 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver")
     ss_left_collar = Collar(SEATSTAY, ss_left_rot, st_seat_stay_collar_height, [-ss_spread, 0, 0], cap = true);
     ss_right_collar = Collar(SEATSTAY, ss_right_rot, st_seat_stay_collar_height, [ss_spread, 0, 0], cap = true);
 
-    pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, 25, [ss_left_collar, ss_right_collar], 1, debug_color, body_color);
+    pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, 25, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha);
 }
 
 // Render for preview
-module seat_tube_junction(debug_color = "invisible", body_color = "silver") {
+module seat_tube_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
     translate([0, 0, -stj_origin_offset])
         rotate([0, 0, 90])
-            seat_tube_junction_core(debug_color, body_color);
+            seat_tube_junction_core(debug_color, body_color, alpha);
 }
 
 seat_tube_junction();
