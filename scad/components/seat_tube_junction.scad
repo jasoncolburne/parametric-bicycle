@@ -30,8 +30,8 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
     ss_right_rot = vector_to_euler(ss_right_dir) + [0, 0, -90] - vector_to_euler(st_unit);
 
     // Create seat stay collars
-    ss_left_collar = Collar(SEATSTAY, ss_left_rot, st_seat_stay_collar_height, [-ss_spread, 0, 0], cap = true);
-    ss_right_collar = Collar(SEATSTAY, ss_right_rot, st_seat_stay_collar_height, [ss_spread, 0, 0], cap = true);
+    ss_left_collar = Collar(SEATSTAY, ss_left_rot, st_seat_stay_collar_height, [-ss_spread, 0, 0], cap = true, axis_rotation = 90);
+    ss_right_collar = Collar(SEATSTAY, ss_right_rot, st_seat_stay_collar_height, [ss_spread, 0, 0], cap = true, axis_rotation = -90);
 
     // Seat tube socket bolt positioning
     seat_tube_bolt_height = st_seat_stay_collar_height / 2;  // Midpoint of collar height (which equals socket depth)

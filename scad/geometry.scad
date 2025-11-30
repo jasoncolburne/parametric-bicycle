@@ -290,7 +290,10 @@ seat_tube_length = norm(st_top - bb_seat_tube);
 // Chainstays: BB junction to dropout (with spread)
 cs_start = [0, cs_spread, bb_chainstay_z];
 cs_end = dropout + [0, cs_spread, dropout_chainstay_z];
-chainstay_length = norm(cs_end - cs_start);
+// Tube length is distance between points minus translation offsets at both ends
+cs_collar_offset = tube_extension_depth(CHAINSTAY) - tube_socket_depth(CHAINSTAY);
+cs_bb_offset = cs_collar_offset + bb_shell_od/2;  // BB end: collar offset + shell radius (matches assembly translation)
+chainstay_length = norm(cs_end - cs_start) - cs_bb_offset;
 
 // Seat stays: Seat tube junction collar position to dropout (with spread)
 ss_start = st_seat_stay_base + [0, ss_spread, 0];
