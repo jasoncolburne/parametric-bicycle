@@ -2,7 +2,7 @@
 // CNC milled component for NestWorks C500
 // Reinforces head tube junction for step-through frame
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module gusset_plate() {
     difference() {

@@ -3,9 +3,9 @@
 // Connects top tube to seat tube at calculated position
 // Sleeve clamps onto seat tube with through bolt
 
-include <../../config.scad>
-include <../../lib/sleeve_primitives.scad>
-include <../../lib/collar.scad>
+include <../geometry.scad>
+include <../lib/sleeve_primitives.scad>
+include <../lib/collar.scad>
 
 // Junction dimensions
 stmj_height = 70;            // Height of junction sleeve on seat tube
@@ -25,7 +25,7 @@ module seat_tube_mid_junction() {
     // Calculate rotation to align sleeve with seat tube
     // Collar rotation points opposite to tt_unit (toward head tube)
     collar_rotation = [rotation_angle, 0, 0];
-    sleeve_rotation = [180, 0, 0];
+    sleeve_rotation = [180, 0, -90];
 
     // Top tube collar - points in -tt_unit direction (no rotation needed - default is up)
     collars = [

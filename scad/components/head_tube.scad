@@ -1,7 +1,7 @@
 // Head Tube
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module head_tube() {
     difference() {

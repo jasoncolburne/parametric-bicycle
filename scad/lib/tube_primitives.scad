@@ -28,8 +28,8 @@ module tube_core(tube_size, length, through_holes = []) {
     }
 }
 
-// Creates the end of a tube with either socket extension or inner sleeve mounting
-// type: "socket" for insertion into junction, "inner_sleeve" for joining tube sections
+// Creates the end of a tube with either socket extension or joint mounting
+// type: "socket" for insertion into junction, "joint" for joining tube sections
 module tube_end(tube_size, type = "socket") {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_thickness(tube_size);
@@ -39,7 +39,7 @@ module tube_end(tube_size, type = "socket") {
     through_r = bolt_through_radius(bolt_size);
 
     height = (type == "socket") ? socket_depth : inner_sleeve_depth;
-    
+
     difference() {
         cylinder(r = outer_r, h = height);
 
@@ -51,22 +51,22 @@ module tube_end(tube_size, type = "socket") {
             translate([0, 0, height / 2])
                 rotate([90, 0, 0])
                     cylinder(r = through_r, h = outer_r * 3, center = true);
-        } else if (type == "inner_sleeve") {
+        } else if (type == "joint") {
             translate([0, 0, height / 3])
                 rotate([90, 0, 0])
                     cylinder(r = through_r, h = outer_r * 3, center = true);
 
-            rotate([0, 0, 90])
-                translate([0, 0, 2 * height / 3])
-                    rotate([90, 0, 0])
-                        cylinder(r = through_r, h = outer_r * 3, center = true);
+            translate([0, 0, height * 2 / 3])
+                rotate([90, 0, 90])
+                    cylinder(r = through_r, h = outer_r * 3, center = true);
         }
     }
 }
 
 // Creates a complete plastic-cf tube with configurable ends
 // Combines tube_core with tube_end at each end
-module tube(tube_size, length, start_type = "socket", end_type = "socket") {
+// through_holes: array of Z positions along tube axis for orthogonal holes
+module tube(tube_size, length, start_type = "socket", end_type = "socket", through_holes = []) {
     socket_depth = tube_socket_depth(tube_size);
     inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
 
@@ -75,12 +75,15 @@ module tube(tube_size, length, start_type = "socket", end_type = "socket") {
     end_length = (end_type == "socket") ? socket_depth : inner_sleeve_depth;
     core_length = length - start_length - end_length;
 
+    // Filter through_holes to only include those in the core region
+    core_through_holes = [for (z = through_holes) if (z >= start_length && z < start_length + core_length) z - start_length];
+
     // Start end
     tube_end(tube_size, start_type);
 
     // Core
     translate([0, 0, start_length])
-        tube_core(tube_size, core_length);
+        tube_core(tube_size, core_length, core_through_holes);
 
     // End end
     translate([0, 0, start_length + core_length])
@@ -100,7 +103,7 @@ function tube_num_sections(tube_size, total_length) =
 // Creates a single section of a split tube for printing
 // Automatically determines end types based on section number
 // Uses global max_tube_length for maximum section length
-module tube_section(tube_size, section_num, total_length) {
+module tube_section(tube_size, section_num, total_length, through_holes = []) {
     socket_depth = tube_socket_depth(tube_size);
     inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
 
@@ -108,17 +111,44 @@ module tube_section(tube_size, section_num, total_length) {
     num_sections = tube_num_sections(tube_size, total_length);
 
     // Calculate section length
-    usable_length_per_section = max_tube_length - socket_depth - inner_sleeve_depth;
-    actual_usable_per_section = total_length / num_sections;
-    section_length = actual_usable_per_section + socket_depth + inner_sleeve_depth;
-
+    section_length = total_length / num_sections;
+    
     // Determine end types
-    // First section: socket start, inner_sleeve end
-    // Middle sections: inner_sleeve both ends
-    // Last section: inner_sleeve start, socket end
-    start_type = (section_num == 0) ? "socket" : "inner_sleeve";
-    end_type = (section_num == num_sections - 1) ? "socket" : "inner_sleeve";
+    // First section: socket start, joint end
+    // Middle sections: joint both ends
+    // Last section: joint start, socket end
+    start_type = (section_num == 0) ? "socket" : "joint";
+    end_type = (section_num == num_sections - 1) ? "socket" : "joint";
 
-    // Render the section
-    tube(tube_size, section_length, start_type, end_type);
+    // Render the section with through holes
+    tube(tube_size, section_length, start_type, end_type, through_holes);
+}
+
+module sectioned_tube(tube_size, total_length, through_holes = []) {
+    socket_depth = tube_socket_depth(tube_size);
+    inner_sleeve_depth = tube_inner_sleeve_depth(tube_size);
+    num_sections = tube_num_sections(tube_size, total_length);
+
+    // Calculate section positions
+    // Each section overlaps with neighbors at joint regions
+    section_length = total_length / num_sections;
+
+    for (i = [0:num_sections-1]) {
+        // Position: first section starts at 0, subsequent sections positioned to connect
+        // Section 0: starts at 0
+        // Section 1+: positioned at end of previous section's usable length
+        section_start_z = i * section_length;
+
+        // Filter through_holes to only those in this section's range
+        // Range is from section start to section start + usable length + socket/joint
+        section_holes = [
+            for (z = through_holes)
+                if (z >= section_start_z && z < section_start_z + section_length)
+                    z - section_start_z
+        ];
+        
+        // Position and render section
+        translate([0, 0, section_start_z])
+            tube_section(tube_size, i, total_length, section_holes);
+    }
 }

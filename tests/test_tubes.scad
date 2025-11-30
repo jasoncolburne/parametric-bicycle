@@ -1,6 +1,6 @@
 // Phase 3 Verification: Test tube_end and complete tube assemblies
 
-include <../scad/config.scad>
+include <../scad/geometry.scad>
 include <../scad/lib/tube_primitives.scad>
 include <../scad/lib/sleeve_primitives.scad>
 
@@ -11,12 +11,12 @@ echo("=== Phase 3 Tube End and Complete Tube Tests ===");
 // Test 1: Socket end only
 echo("Test 1: Socket end (40mm)");
 translate([0, 0, 0])
-    tube_end(DOWN_TUBE, 40, "socket");
+    tube_end(DOWN_TUBE, "socket");
 
 // Test 2: Inner sleeve end only
 echo("Test 2: Inner sleeve end (30mm with bolt holes)");
 translate([spacing, 0, 0])
-    tube_end(DOWN_TUBE, 30, "inner_sleeve");
+    tube_end(DOWN_TUBE, "inner_sleeve");
 
 // Test 3: Complete tube with socket ends (for junction insertion)
 echo("Test 3: Complete tube with socket/socket ends (200mm total)");
@@ -36,17 +36,7 @@ translate([0, spacing, 0])
 // Test 6: Assembly demonstration - two tube sections with inner sleeve
 echo("Test 6: Assembled tube sections with inner sleeve");
 translate([spacing, spacing, 0]) {
-    // First section
-    tube(DOWN_TUBE, 150, "socket", "inner_sleeve");
-
-    // Inner sleeve (partially visible)
-    translate([0, 0, 150 - 30])
-        color("silver")
-            inner_sleeve(DOWN_TUBE);
-
-    // Second section
-    translate([0, 0, 150 - 30 + 30])  // Overlap by sleeve length
-        tube(DOWN_TUBE, 150, "inner_sleeve", "socket");
+    sectioned_tube(DOWN_TUBE, 300);
 }
 
 echo("=== Dimension Checks ===");
@@ -57,12 +47,9 @@ echo("Down tube outer diameter:", tube_outer_radius(DOWN_TUBE) * 2);
 // Test 7: tube_section - split a long tube
 echo("Test 7: Tube sections for 500mm total length");
 total_len = 500;
-num_sections = tube_num_sections(DOWN_TUBE, total_len);
+num_sections = tube_num_sections(TOP_TUBE, total_len);
 echo("  Number of sections needed:", num_sections);
 
 translate([spacing * 2, spacing, 0]) {
-    for (i = [0:num_sections-1]) {
-        translate([i * 80, 0, 0])
-            tube_section(DOWN_TUBE, i, total_len);
-    }
+    sectioned_tube(TOP_TUBE, total_len);
 }

@@ -3,7 +3,7 @@
 // Connects chainstay and seat stay to dropout
 // One required per side (left and right)
 
-include <../../config.scad>
+include <../geometry.scad>
 
 // Junction dimensions
 dj_width = 60;               // Width (lateral) - increased to accommodate ss_spread offset
@@ -25,6 +25,10 @@ module dropout_junction(side = 1) {
     ss_end = [0, side * (ss_spread - cs_spread), dropout_seat_stay_z];
     ss_start = (st_top + [0, side * ss_spread, st_seat_stay_z]) - (dropout + [0, side * cs_spread, 0]);
     // ss_start = [st_top_x - dropout_x, side*(ss_spread - cs_spread), st_top_z + st_seat_stay_z - dropout_z]
+
+    // Socket depths for each tube type
+    cs_socket_depth = tube_socket_depth(CHAINSTAY);
+    ss_socket_depth = tube_socket_depth(SEATSTAY);
 
     difference() {
         // Main body - hull around spheres for organic shape
@@ -53,8 +57,8 @@ module dropout_junction(side = 1) {
         // Chainstay socket - tube enters from BB end
         // Open at surface, cap inside body
         orient_to(cs_end, cs_start)
-            translate([0, 0, -junction_socket_depth])
-                cylinder(h = junction_socket_depth + 25, d = chainstay_od + socket_clearance);
+            translate([0, 0, -cs_socket_depth])
+                cylinder(h = cs_socket_depth + 25, d = chainstay_od + socket_clearance);
 
         // Chainstay bolt hole with counterbore and threaded mounting
         // Design: M6 socket head cap screw inserts from opposite direction as seat stay bolt
@@ -62,7 +66,7 @@ module dropout_junction(side = 1) {
         //   - Middle: 6.5mm clearance hole for M6 bolt shaft
         //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
         orient_to(cs_end, cs_start)
-            translate([0, 0, junction_socket_depth/2 - 25])
+            translate([0, 0, cs_socket_depth/2 - 25])
                 rotate([90, 0, side > 0 ? 180 : 0]) {
                     // Counterbore for socket head cap screw (rotated 180° from seat stay)
                     // Starts 3mm from tube bore, extends outward to clear entire hull
@@ -82,8 +86,8 @@ module dropout_junction(side = 1) {
         // Seat stay socket - tube enters from seat tube junction end
         // Open at surface, cap inside body
         orient_to(ss_end, ss_start)
-            translate([0, 0, -junction_socket_depth])
-                cylinder(h = junction_socket_depth + 25, d = seat_stay_od + socket_clearance);
+            translate([0, 0, -ss_socket_depth])
+                cylinder(h = ss_socket_depth + 25, d = seat_stay_od + socket_clearance);
 
         // Seat stay bolt hole with counterbore and threaded mounting
         // Design: M6 socket head cap screw inserts from same side as chainstay bolt
@@ -91,7 +95,7 @@ module dropout_junction(side = 1) {
         //   - Middle: 6.5mm clearance hole for M6 bolt shaft
         //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
         orient_to(ss_end, ss_start)
-            translate([0, 0, junction_socket_depth/2 - 25])
+            translate([0, 0, ss_socket_depth/2 - 25])
                 rotate([90, 0, side > 0 ? 0 : 180]) {
                     // Counterbore for socket head cap screw (same side as chainstay)
                     // Starts 3mm from tube bore, extends outward to clear entire hull

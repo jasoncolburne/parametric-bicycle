@@ -2,7 +2,7 @@
 // CNC milled aluminum for NestWorks C500
 // Joins two down tube sections at an angle for step-through frame
 
-include <../../config.scad>
+include <../geometry.scad>
 
 // Gusset dimensions
 gusset_block_width = 80;

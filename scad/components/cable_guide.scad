@@ -1,7 +1,7 @@
 // Cable Guide
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module cable_guide() {
     difference() {

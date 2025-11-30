@@ -68,7 +68,7 @@ translate([spacing * 2, spacing, 0]) {
         Collar(SEAT_TUBE, [-90, 0, 0], 50)
     ];
     // Stepped bore: upper smaller than lower (for demonstration)
-    pinched_sleeve(SEAT_TUBE, 100, 50, collars, 2, SEAT_TUBE, SEAT_TUBE);
+    pinched_sleeve(HEAD_TUBE_UPPER, HEAD_TUBE, 100, 50, collars, 2);
 }
 
 // Test 7: Tapped sleeve with single collar and two taps

@@ -1,7 +1,7 @@
 // Rear Dropout
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module dropout() {
     difference() {

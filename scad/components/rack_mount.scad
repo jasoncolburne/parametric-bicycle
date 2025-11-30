@@ -1,7 +1,7 @@
 // Rack/Fender Mount
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module rack_mount() {
     difference() {

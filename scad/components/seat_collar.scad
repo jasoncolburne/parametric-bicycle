@@ -1,7 +1,7 @@
 // Seat Tube Collar
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module seat_collar() {
     difference() {

@@ -33,12 +33,6 @@ module sleeve(tube_size, height, collars) {
 
         translate([0, 0, -height])
             cylinder(r = outer_r + clearance, h = 3 * height);
-            
-        translate([0, 0, -height])
-            cube([height, height, height], center = true);
-
-        translate([0, 0, height * 3/2])
-            cube([height, height, height], center = true);
     }
 }
 

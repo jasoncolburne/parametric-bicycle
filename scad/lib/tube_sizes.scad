@@ -3,6 +3,10 @@
 
 include <bolt_sizes.scad>
 
+// Fabrication constraints
+fibreseeker_max_z = 245;  // FibreSeeker 3 maximum Z height in mm
+max_tube_length = fibreseeker_max_z;  // Maximum printable tube length
+
 // Internal indices (private)
 _TUBE_OUTER_RADIUS = 0;
 _TUBE_THICKNESS = 1;
@@ -132,4 +136,18 @@ SEATSTAY = TubeSize(
     5,      // collar_thickness
     0.7,    // pinch_separation
     M5_BOLT // bolt_size (smaller bolts for seatstays)
+);
+
+SEAT_POST = TubeSize(
+    13.6,   // outer_radius (27.2mm OD - standard seatpost)
+    1.5,    // thickness (wall thickness)
+    0,      // inner_sleeve_depth (N/A - seatpost doesn't section)
+    0,      // inner_sleeve_thickness (N/A)
+    0,      // inner_sleeve_clearance (N/A)
+    0,      // socket_depth (N/A - seatpost inserts into seat tube)
+    0.25,   // socket_clearance (clearance between seatpost and seat tube)
+    0,      // extension_depth (N/A)
+    4,      // collar_thickness (seat collar wall thickness)
+    0,      // pinch_separation (N/A)
+    M5_BOLT // bolt_size (seat collar uses M5)
 );

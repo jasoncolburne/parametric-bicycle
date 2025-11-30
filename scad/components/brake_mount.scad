@@ -1,7 +1,7 @@
 // Disc Brake Mount (Post Mount)
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module brake_mount() {
     difference() {

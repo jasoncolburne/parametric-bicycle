@@ -2,7 +2,7 @@
 // CNC milled component for NestWorks C500
 // Internal coupler for joining tube sections
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module tube_sleeve(tube_od) {
     // Sleeve fits inside tube sections

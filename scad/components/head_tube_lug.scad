@@ -3,10 +3,10 @@
 // Connects head tube to down tube
 // Wraps around lower portion of head tube
 
-include <../../config.scad>
-include <../../lib/sleeve_primitives.scad>
-include <../../lib/collar.scad>
-include <../../lib/tube_sizes.scad>
+include <../geometry.scad>
+include <../lib/sleeve_primitives.scad>
+include <../lib/collar.scad>
+include <../lib/tube_sizes.scad>
 
 module head_tube_lug_aligned() {
     // Stepped bore dimensions
@@ -24,8 +24,13 @@ module head_tube_lug_aligned() {
     // Pinch bolt count (single bolt)
     bolt_count = 2;
 
-    // Use pinched_sleeve with stepped bore and collars
-    pinched_sleeve(HEAD_TUBE_UPPER, HEAD_TUBE, lug_height, pinch_slot_depth, collars, bolt_count);
+    difference() {
+        // Use pinched_sleeve with stepped bore and collars
+        pinched_sleeve(HEAD_TUBE_UPPER, HEAD_TUBE, lug_height, pinch_slot_depth, collars, bolt_count);
+        
+        translate([0, 0, lug_height * 3/2])
+            cube([lug_height, lug_height, lug_height], center = true);
+    }
 }
 
 // Wrapper to reposition origin at downtube socket cap center
@@ -34,7 +39,7 @@ module head_tube_lug() {
     extension_depth = tube_extension_depth(DOWN_TUBE);
 
     translate([0, 0, extension_depth - socket_depth])
-        rotate([180+dt_angle, 0, -90])
+        rotate([180+dt_angle, 0, 90])
             translate([0, 0, -down_tube_extension_translation])
                 head_tube_lug_aligned();
 }

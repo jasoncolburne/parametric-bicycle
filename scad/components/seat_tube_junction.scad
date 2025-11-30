@@ -3,59 +3,38 @@
 // Connects seat tube top to seat stays
 // Also serves as seat collar mount
 
-include <../../config.scad>
+include <../geometry.scad>
 
 // Junction dimensions
 stj_height = 60;             // Height of junction
 
-module seat_tube_junction() {
-    // This junction is placed with:
-    //   orient_to(bb_seat_tube, st_top)
-    //   translate([0, 0, norm(st_top - bb_seat_tube) - stj_height])
-    //
-    // So local Z points along seat tube toward st_top
-    // Junction top (at local Z = stj_height) is at st_top
-
-    // Seat stays connect at st_top + [0, ±ss_spread, st_seat_stay_z]
-    // In local coords, st_top is at [0, 0, stj_height]
-    // st_seat_stay_z is a world Z offset that needs to be projected
-
-    // The junction is placed in assembly with:
-    //   orient_to(bb_seat_tube, st_top)
-    //   translate([0, 0, norm(st_top - bb_seat_tube) - stj_height])
-    //
-    // So junction local origin is at world position along seat tube,
-    // stj_height below st_top (measured along tube axis).
-    // Junction top (local Z = stj_height) is at st_top.
-
-    // Seat stay connects at world position: st_top + [0, ±ss_spread, st_seat_stay_z]
-    // In local coords, st_top is at [0, 0, stj_height]
-    // We need to transform the world offset [0, 0, st_seat_stay_z] to local
-
-    // The seat tube direction in world coords:
+module seat_tube_junction_core() {
+    // Calculate coordinate transformation parameters
     _tube_len = norm(st_top - bb_seat_tube);
     _tube_dir = (st_top - bb_seat_tube) / _tube_len;
-
-    // orient_to rotation angle around Y axis (same as used in assembly):
-    _dx_tube = st_top[0] - bb_seat_tube[0];
-    _dz_tube = st_top[2] - bb_seat_tube[2];
-    _az = atan2(_dx_tube, _dz_tube);
-
-    // Junction origin in world coords (same calculation as used for sockets)
+    _az = atan2(st_top[0] - bb_seat_tube[0], st_top[2] - bb_seat_tube[2]);
     junction_origin = bb_seat_tube + _tube_dir * (_tube_len - stj_height);
 
-    // Transform seat stay world position to local coords
-    // Seat stay connects at: st_top + [0, ±ss_spread, st_seat_stay_z]
+    // Helper function to transform world coordinates to local junction coordinates
+    function world_to_local(world_pos) =
+        let(offset = world_pos - junction_origin)
+        [
+            offset[0] * cos(_az) - offset[2] * sin(_az),
+            offset[1],
+            offset[0] * sin(_az) + offset[2] * cos(_az)
+        ];
+
+    // Calculate seat stay positions once
     ss_world_center = st_top + [0, 0, st_seat_stay_z];
-    ss_offset = ss_world_center - junction_origin;
+    ss_local = world_to_local(ss_world_center);
+    ss_local_x = ss_local[0];
+    ss_local_z = ss_local[2];
 
-    // Apply inverse rotation (rotate by -_az around Y)
-    ss_local_x = ss_offset[0] * cos(_az) - ss_offset[2] * sin(_az);
-    ss_local_z = ss_offset[0] * sin(_az) + ss_offset[2] * cos(_az);
-
-    // For dropout end points, we need the full direction
-    // Seat stay goes from st_top + [0, ±ss_spread, st_seat_stay_z]
-    //                  to dropout + [0, ±cs_spread, dropout_seat_stay_z]
+    // Calculate seat stay local positions for each side
+    ss_left_start = world_to_local(st_top + [-ss_spread, 0, st_seat_stay_z]);
+    ss_left_end = world_to_local(dropout + [-cs_spread, 0, dropout_seat_stay_z]);
+    ss_right_start = world_to_local(st_top + [ss_spread, 0, st_seat_stay_z]);
+    ss_right_end = world_to_local(dropout + [cs_spread, 0, dropout_seat_stay_z]);
 
     difference() {
         union() {
@@ -259,4 +238,9 @@ module seat_tube_junction() {
 }
 
 // Render for preview
+module seat_tube_junction() {
+    translate([0, 0, -35])
+        seat_tube_junction_core();
+}
+
 seat_tube_junction();

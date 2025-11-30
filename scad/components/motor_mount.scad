@@ -1,7 +1,7 @@
 // Motor Mount Plate
 // CNC milled component for NestWorks C500
 
-include <../../config.scad>
+include <../geometry.scad>
 
 module motor_mount() {
     difference() {
