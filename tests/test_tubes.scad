@@ -41,7 +41,7 @@ translate([spacing, spacing, 0]) {
 
 echo("=== Dimension Checks ===");
 echo("Socket depth:", tube_socket_depth(DOWN_TUBE));
-echo("Inner sleeve depth:", tube_inner_sleeve_depth(DOWN_TUBE));
+echo("Joint depth:", tube_joint_depth(DOWN_TUBE));
 echo("Down tube outer diameter:", tube_outer_radius(DOWN_TUBE) * 2);
 
 // Test 7: tube_section - split a long tube

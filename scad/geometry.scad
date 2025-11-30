@@ -29,7 +29,7 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 // All other geometry is DERIVED from these values
 
 // Fit parameters (define rider position)
-reach = 375;                         // Horizontal BB to head tube top
+reach = 392;                         // Horizontal BB to head tube top
 stack = 633;                         // Vertical BB to head tube top
 standover_height = 450;              // Clearance for step-through
 
@@ -235,10 +235,9 @@ bb_seat_tube = [
     st_socket_distance * sin(180-seat_tube_angle)
 ];
 
-// Chainstay sockets: tangent points in direction of chainstays
-// Positioned at ±spread in Y direction
+// Chainstay sockets: positioned at ±spread in Y direction
 cs_spread = 60;  // Chainstay spread for mid-drive motor clearance
-bb_chainstay_z = 25 * sin(chainstay_angle);
+bb_chainstay_z = 0;  // Chainstay exits at BB centerline
 
 // --- SEAT TUBE TOP POSITION ---
 // Calculate based on standover requirement or frame size
