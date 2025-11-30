@@ -4,119 +4,80 @@
 // One required per side (left and right)
 
 include <../geometry.scad>
+include <../lib/collar.scad>
+include <../lib/sleeve_primitives.scad>
 
-// Junction dimensions
-dj_width = 60;               // Width (lateral) - increased to accommodate ss_spread offset
-dj_depth = 50;               // Depth (fore-aft)
+module dropout_junction_core(side = 1, debug_color = "invisible", body_color = "silver", alpha = 1.0) {
+    // Calculate tube directions in junction's local coordinate system
+    // Junction is positioned at: dropout + [0, side * cs_spread, 0]
 
-module dropout_junction(side = 1) {
-    // Calculate local coordinates for tube endpoints
-    // Junction is placed at: dropout + [0, side * cs_spread, 0]
+    // Chainstay direction: from BB to dropout
+    // But collar needs to point TOWARD the tube source, so reverse it
+    cs_start_world = [0, side * cs_spread, bb_chainstay_z];
+    cs_end_world = dropout + [0, side * cs_spread, dropout_chainstay_z];
+    cs_dir = cs_start_world - cs_end_world;  // Reversed: point toward BB
 
-    // Chainstay: from [0, side*cs_spread, bb_chainstay_z] to dropout + [0, side*cs_spread, dropout_chainstay_z]
-    // In local coords:
-    cs_end = [0, 0, dropout_chainstay_z];
-    cs_start = [0, side * cs_spread, bb_chainstay_z] - (dropout + [0, side * cs_spread, 0]);
-    // cs_start = [-dropout_x, 0, bb_chainstay_z - dropout_z]
+    // Seat stay direction: from seat tube junction to dropout
+    // But collar needs to point TOWARD the tube source, so reverse it
+    ss_start_world = st_seat_stay_base + [0, side * ss_spread, 0];
+    ss_end_world = dropout + [0, side * ss_spread, dropout_seat_stay_z];
+    ss_dir = ss_start_world - ss_end_world;  // Reversed: point toward seat tube junction
 
-    // Seat stay: from st_top + [0, side*ss_spread, st_seat_stay_z] to dropout + [0, side*ss_spread, dropout_seat_stay_z]
-    // Seat stay keeps at ss_spread (no convergence with chainstay for structural rigidity)
-    // Junction is at dropout + [0, side * cs_spread, 0], so seat stay end is offset laterally
-    ss_end = [0, side * (ss_spread - cs_spread), dropout_seat_stay_z];
-    ss_start = (st_top + [0, side * ss_spread, st_seat_stay_z]) - (dropout + [0, side * cs_spread, 0]);
-    // ss_start = [st_top_x - dropout_x, side*(ss_spread - cs_spread), st_top_z + st_seat_stay_z - dropout_z]
+    // Calculate rotations for collars
+    cs_rot = vector_to_euler(cs_dir);
+    ss_rot = vector_to_euler(ss_dir);
 
-    // Socket depths for each tube type
+    // Socket depths
     cs_socket_depth = tube_socket_depth(CHAINSTAY);
     ss_socket_depth = tube_socket_depth(SEATSTAY);
+    cs_extension_depth = tube_extension_depth(CHAINSTAY);
+    ss_extension_depth = tube_extension_depth(SEATSTAY);
 
+    // Local positions of collar socket entrances (relative to junction origin at dropout + [0, side * cs_spread, 0])
+    // The tube socket end should INSERT into the collar socket
+    // Collar extends (extension_depth - socket_depth) forward from its origin
+    // So we need to move collar origin back by that amount along the tube direction
+    cs_dir_unit = cs_dir / norm(cs_dir);
+    ss_dir_unit = ss_dir / norm(ss_dir);
+
+    cs_tube_end = [0, 0, dropout_chainstay_z];
+    ss_tube_end = [0, side * (ss_spread - cs_spread), dropout_seat_stay_z];
+
+    cs_local = cs_tube_end - (cs_extension_depth - cs_socket_depth) * cs_dir_unit;
+    ss_local = ss_tube_end - (ss_extension_depth - ss_socket_depth) * ss_dir_unit;
+
+    // Create collars with height = 0 (all positioning done via translation)
+    cs_collar = Collar(CHAINSTAY, cs_rot, 0, cs_local, cap = true);
+    ss_collar = Collar(SEATSTAY, ss_rot, 0, ss_local, cap = true);
+
+    // Main junction body using sleeve primitive
     difference() {
-        // Main body - hull around spheres for organic shape
         hull() {
-            // Chainstay entry lug
-            translate(cs_end)
-                sphere(r = chainstay_od/2 + 10);
-
-            // Seat stay entry lug
-            translate(ss_end)
-                sphere(r = seat_stay_od/2 + 8);
-
-            // Axle boss - sphere around axle position
-            translate([0, 0, 0])
+            // Axle boss
+            color(body_color, alpha)
                 sphere(r = dropout_axle_diameter/2 + 10);
 
-            // Rear support - sphere behind chainstay to cover protrusion
-            translate([-20, 0, dropout_chainstay_z])
-                sphere(r = chainstay_od/2 + 8);
+            // Chainstay collar positive
+            sleeve_collar(cs_collar, operation = "positive", body_color = body_color, alpha = alpha);
 
-            // Rear support - sphere behind seat stay to cover protrusion
-            translate([-20, side * (ss_spread - cs_spread), dropout_seat_stay_z])
-                sphere(r = seat_stay_od/2 + 10);
+            // Seat stay collar positive
+            sleeve_collar(ss_collar, operation = "positive", body_color = body_color, alpha = alpha);
         }
 
-        // Chainstay socket - tube enters from BB end
-        // Open at surface, cap inside body
-        orient_to(cs_end, cs_start)
-            translate([0, 0, -cs_socket_depth])
-                cylinder(h = cs_socket_depth + 25, d = chainstay_od + socket_clearance);
+        // Chainstay collar negative
+        sleeve_collar(cs_collar, operation = "negative", debug_color = debug_color);
 
-        // Chainstay bolt hole with counterbore and threaded mounting
-        // Design: M6 socket head cap screw inserts from opposite direction as seat stay bolt
-        //   - Outside: Counterbore for 10mm socket head (clears entire hull)
-        //   - Middle: 6.5mm clearance hole for M6 bolt shaft
-        //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
-        orient_to(cs_end, cs_start)
-            translate([0, 0, cs_socket_depth/2 - 25])
-                rotate([90, 0, side > 0 ? 180 : 0]) {
-                    // Counterbore for socket head cap screw (rotated 180° from seat stay)
-                    // Starts 3mm from tube bore, extends outward to clear entire hull
-                    translate([0, 0, (chainstay_od + socket_clearance)/2 + 3])
-                        cylinder(h = 30, d = m6_socket_head_diameter);
-
-                    // Clearance hole for bolt shaft (from inside socket cavity to counterbore)
-                    translate([0, 0, (chainstay_od + socket_clearance)/2 - 5])
-                        cylinder(h = 8, d = joint_bolt_diameter + 0.5);
-
-                    // Tap drill hole for M6 threads (starts 2mm inside socket, drills outward)
-                    translate([0, 0, -((chainstay_od + socket_clearance)/2 - 2)])
-                        rotate([180, 0, 0])
-                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
-                }
-
-        // Seat stay socket - tube enters from seat tube junction end
-        // Open at surface, cap inside body
-        orient_to(ss_end, ss_start)
-            translate([0, 0, -ss_socket_depth])
-                cylinder(h = ss_socket_depth + 25, d = seat_stay_od + socket_clearance);
-
-        // Seat stay bolt hole with counterbore and threaded mounting
-        // Design: M6 socket head cap screw inserts from same side as chainstay bolt
-        //   - Outside: Counterbore for 10mm socket head (clears entire hull)
-        //   - Middle: 6.5mm clearance hole for M6 bolt shaft
-        //   - Inside: 8mm threaded hole (5.0mm tap drill) - starts at tube bore
-        orient_to(ss_end, ss_start)
-            translate([0, 0, ss_socket_depth/2 - 25])
-                rotate([90, 0, side > 0 ? 0 : 180]) {
-                    // Counterbore for socket head cap screw (same side as chainstay)
-                    // Starts 3mm from tube bore, extends outward to clear entire hull
-                    translate([0, 0, (seat_stay_od + socket_clearance)/2 + 3])
-                        cylinder(h = 30, d = m6_socket_head_diameter);
-
-                    // Clearance hole for bolt shaft (from inside socket cavity to counterbore)
-                    translate([0, 0, (seat_stay_od + socket_clearance)/2 - 5])
-                        cylinder(h = 8, d = joint_bolt_diameter + 0.5);
-
-                    // Tap drill hole for M6 threads (starts 2mm inside socket, drills outward)
-                    translate([0, 0, -((seat_stay_od + socket_clearance)/2 - 2)])
-                        rotate([180, 0, 0])
-                            cylinder(h = m6_thread_depth, d = m6_tap_drill);
-                }
+        // Seat stay collar negative
+        sleeve_collar(ss_collar, operation = "negative", debug_color = debug_color);
 
         // Axle clearance
-        translate([0, 0, 0])
-            rotate([90, 0, 0])
-                cylinder(h = dj_width + 10, d = dropout_axle_diameter + 2, center = true);
+        rotate([90, 0, 0])
+            cylinder(h = 100, d = dropout_axle_diameter + 2, center = true);
     }
+}
+
+module dropout_junction(side = 1, debug_color = "invisible", body_color = "silver", alpha = 1.0) {
+    dropout_junction_core(side, debug_color, body_color, alpha);
 }
 
 // Render for preview or build (set via -D render_side=N)

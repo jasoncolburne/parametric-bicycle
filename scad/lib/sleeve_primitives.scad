@@ -101,8 +101,8 @@ module sleeve_collar(collar, operation = "both", debug_color = "invisible", body
                                         h = outer_r + collar_thickness - (outer_r + socket_clearance/2 - 2));
 
                             // Counterbore for socket head
-                            translate([0, 0, -(outer_r + collar_thickness)])
-                                cylinder(r = counterbore_r, h = counterbore_d);
+                            translate([0, 0, -(outer_r + collar_thickness + 50)])
+                                cylinder(r = counterbore_r, h = counterbore_d + 50);
                         }
                 }
             }

@@ -20,6 +20,7 @@ debug_bb_junction = "magenta";
 debug_head_tube_lug = "orange";
 debug_seat_tube_junction = "purple";
 debug_seat_tube_mid_junction = "white";
+debug_dropout_junction = "brown";
 
 // Import component modules
 use <components/bb_shell.scad>
@@ -104,12 +105,10 @@ module frame_assembly() {
             sectioned_tube(SEATSTAY, seat_stay_length, debug_color = debug_seatstay, body_color = color_plastic);
 
     // --- DROPOUT JUNCTIONS ---
-    // Temporarily removed - will be added back after chainstay/seatstay positioning is finalized
-    // color(color_metal, alpha_metal)
-    //     for (side = [-1, 1]) {
-    //         translate(dropout + [0, side * cs_spread, 0])
-    //             dropout_junction(side);
-    //     }
+    for (side = [-1, 1]) {
+        translate(dropout + [0, side * cs_spread, 0])
+            dropout_junction(side, debug_color = debug_dropout_junction, body_color = color_metal, alpha = alpha_metal);
+    }
 
     // --- BB SHELL ---
     // Centered at origin, oriented laterally (along Y axis)
