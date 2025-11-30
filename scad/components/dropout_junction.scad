@@ -47,28 +47,31 @@ module dropout_junction_core(side = 1, debug_color = "invisible", body_color = "
     ss_local = ss_tube_end - (ss_extension_depth - ss_socket_depth) * ss_dir_unit;
 
     // Create collars with height = 0 (all positioning done via translation)
-    cs_collar = Collar(CHAINSTAY, cs_rot, 0, cs_local, cap = true);
-    ss_collar = Collar(SEATSTAY, ss_rot, 0, ss_local, cap = true);
+    // axis_rotation depends on side to rotate socket bore outward for weather resistance
+    cs_collar = Collar(CHAINSTAY, cs_rot, 0, cs_local, cap = true, axis_rotation = -side * 90);
+    ss_collar = Collar(SEATSTAY, ss_rot, 0, ss_local, cap = true, axis_rotation = -side * 90);
 
     // Main junction body using sleeve primitive
     difference() {
         hull() {
-            // Axle boss
-            color(body_color, alpha)
-                sphere(r = dropout_axle_diameter/2 + 10);
+            union() {
+                // Axle boss
+                color(body_color, alpha)
+                    sphere(r = dropout_axle_diameter/2 + 10);
+            }
 
             // Chainstay collar positive
-            sleeve_collar(cs_collar, operation = "positive", body_color = body_color, alpha = alpha);
+            sleeve_collar(cs_collar, geometry = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
 
             // Seat stay collar positive
-            sleeve_collar(ss_collar, operation = "positive", body_color = body_color, alpha = alpha);
+            sleeve_collar(ss_collar, geometry = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
         }
 
         // Chainstay collar negative
-        sleeve_collar(cs_collar, operation = "negative", debug_color = debug_color);
+        sleeve_collar(cs_collar, geometry = "negative");
 
         // Seat stay collar negative
-        sleeve_collar(ss_collar, operation = "negative", debug_color = debug_color);
+        sleeve_collar(ss_collar, geometry = "negative");
 
         // Axle clearance
         rotate([90, 0, 0])

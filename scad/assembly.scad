@@ -7,7 +7,7 @@ include <geometry.scad>
 $fn = fn_assembly;
 
 // Metal transparency for geometry verification (1.0 = opaque, 0.3 = transparent)
-alpha_metal = 0.25;
+alpha_metal = 1;
 
 // Debug colors for socket alignment visualization
 // Set to "invisible" to hide, or a color name to show debugging pins
@@ -20,7 +20,7 @@ debug_bb_junction = "magenta";
 debug_head_tube_lug = "orange";
 debug_seat_tube_junction = "purple";
 debug_seat_tube_mid_junction = "white";
-debug_dropout_junction = "brown";
+debug_dropout_junction = "invisible";
 
 // Import component modules
 use <components/bb_shell.scad>

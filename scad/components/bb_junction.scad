@@ -26,20 +26,20 @@ module bb_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0
 
             // Down tube collar
             rotate(bb_dt_collar_rotation)
-                sleeve_collar(dt_collar, operation = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
+                sleeve_collar(dt_collar, geometry = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
 
             // Seat tube collar
             rotate(bb_st_collar_rotation)
-                sleeve_collar(st_collar, operation = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
+                sleeve_collar(st_collar, geometry = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
         }
 
         // Down tube collar negative
         rotate(bb_dt_collar_rotation)
-            sleeve_collar(dt_collar, operation = "negative");
+            sleeve_collar(dt_collar, geometry = "negative");
 
         // Seat tube collar negative
         rotate(bb_st_collar_rotation)
-            sleeve_collar(st_collar, operation = "negative");
+            sleeve_collar(st_collar, geometry = "negative");
 
         // BB shell bore (through center, lateral)
         rotate([90, 0, 0])
