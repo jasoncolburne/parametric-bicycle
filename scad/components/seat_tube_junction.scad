@@ -26,14 +26,52 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
 
     // Collar rotations to align with seat stay tubes
     // Adjust for junction's coordinate system (rotated 90° around Z)
-    ss_left_rot = vector_to_euler(ss_left_dir) + [0, 0, -90] - vector_to_euler(st_unit); 
+    ss_left_rot = vector_to_euler(ss_left_dir) + [0, 0, -90] - vector_to_euler(st_unit);
     ss_right_rot = vector_to_euler(ss_right_dir) + [0, 0, -90] - vector_to_euler(st_unit);
 
     // Create seat stay collars
     ss_left_collar = Collar(SEATSTAY, ss_left_rot, st_seat_stay_collar_height, [-ss_spread, 0, 0], cap = true);
     ss_right_collar = Collar(SEATSTAY, ss_right_rot, st_seat_stay_collar_height, [ss_spread, 0, 0], cap = true);
 
-    pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, 25, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha);
+    // Seat tube socket bolt positioning
+    seat_tube_bolt_height = st_seat_stay_collar_height / 2;  // Midpoint of collar height (which equals socket depth)
+
+    // Bolt sizes for seat tube
+    outer_r = tube_outer_radius(SEAT_TUBE);
+    thickness = tube_collar_thickness(SEAT_TUBE);
+    bolt_size = tube_bolt_size(SEAT_TUBE);
+    tap_r = bolt_tap_radius(bolt_size);
+    clearance_r = bolt_clearance_radius(bolt_size);
+    counterbore_r = bolt_counterbore_radius(bolt_size);
+    counterbore_d = bolt_counterbore_depth(bolt_size);
+    boss_r = bolt_boss_radius(bolt_size);
+
+    difference() {
+        union() {
+            pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, stj_height - st_seat_stay_collar_height, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha);
+
+            // Boss for seat tube socket bolt
+            color(body_color, alpha)
+                translate([outer_r + thickness, 0, seat_tube_bolt_height])
+                    sphere(r = boss_r);
+        }
+
+        // Seat tube socket bolt holes
+        translate([0, 0, seat_tube_bolt_height])
+            rotate([0, 90, 0]) {
+                // Tap hole from inner side
+                translate([0, 0, outer_r - 2])
+                    cylinder(r = tap_r, h = 12);
+
+                // Clearance hole from opposite side
+                translate([0, 0, -(outer_r + thickness)])
+                    cylinder(r = clearance_r, h = (outer_r + thickness) - (outer_r - 2));
+
+                // Counterbore for socket head
+                translate([0, 0, -(outer_r + thickness)])
+                    cylinder(r = counterbore_r, h = counterbore_d);
+            }
+    }
 }
 
 // Render for preview

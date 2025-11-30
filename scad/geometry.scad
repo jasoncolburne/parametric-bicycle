@@ -254,7 +254,7 @@ dropout_seat_stay_z = 60;  // Raised proportionally
 
 // --- SEAT TUBE JUNCTION ---
 stj_height = 60;                    // Total junction height
-st_seat_stay_collar_height = 40;             // Junction origin offset from top (for socket positioning)
+st_seat_stay_collar_height = tube_socket_depth(SEAT_TUBE);  // Collar height based on seat tube socket depth
 
 // --- SEAT STAY POSITIONS ---
 ss_spread = 35;  // Seat stay spread (narrower than chainstay)
