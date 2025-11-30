@@ -83,6 +83,8 @@ dropout_axle_diameter = 12;
 bb_shell_od = 42;
 bb_shell_id = 34.8;                  // BSA threaded
 bb_thread_tpi = 24;                  // BSA 1.37" x 24 TPI
+bb_wall = 6;                         // Wall thickness around BB shell for junction
+bb_bore_length = 130;                // Total pedal bore length (e-bike mid-drive clearance)
 
 // =============================================================================
 // HEAD TUBE

@@ -91,10 +91,12 @@ module frame_assembly() {
 
     // --- CHAINSTAYS ---
     // Connect from bb area to dropout area
+    // Tube starts at socket entrance, not at base point
     for (side = [-1, 1])
         orient_to([0, side * cs_spread, bb_chainstay_z],
                   dropout + [0, side * cs_spread, dropout_chainstay_z])
-            sectioned_tube(CHAINSTAY, chainstay_length, debug_color = debug_chainstay, body_color = color_plastic);
+            translate([0, 0, tube_extension_depth(CHAINSTAY) - tube_socket_depth(CHAINSTAY) + bb_shell_od/2])
+                sectioned_tube(CHAINSTAY, chainstay_length, debug_color = debug_chainstay, body_color = color_plastic);
 
     // --- SEAT STAYS ---
     // Connect from seat tube junction collar to dropout

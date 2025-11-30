@@ -8,40 +8,43 @@ include <../geometry.scad>
 include <../lib/collar.scad>
 include <../lib/sleeve_primitives.scad>
 
-// Junction dimensions
-bb_wall = 6;                 // Wall thickness around BB shell
-bb_bore_length = 130;        // Total pedal bore length (e-bike mid-drive clearance)
-
 module bb_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0) {
     // Use collar configuration from geometry.scad
     dt_collar = Collar(DOWN_TUBE, bb_dt_collar_internal_rotation, bb_dt_collar_height);
     st_collar = Collar(SEAT_TUBE, bb_st_collar_internal_rotation, bb_st_collar_height);
 
     // Chainstay collar configuration
-    // Chainstay direction: from BB toward dropout
-    cs_start = [0, 0, bb_chainstay_z];  // At BB (centerline in Y)
-    cs_end = [dropout_x, 0, dropout_chainstay_z];  // At dropout (centerline in Y)
-    cs_dir = cs_end - cs_start;  // Direction toward dropout
-    cs_unit = cs_dir / norm(cs_dir);
+    // Left and right chainstays have different directions due to Y spread
+    cs_left_start = [0, cs_spread, bb_chainstay_z];
+    cs_left_end = dropout + [0, cs_spread, dropout_chainstay_z];
+    cs_left_dir = cs_left_end - cs_left_start;
+    cs_left_unit = cs_left_dir / norm(cs_left_dir);
 
-    cs_rot = vector_to_euler(cs_dir);
+    cs_right_start = [0, -cs_spread, bb_chainstay_z];
+    cs_right_end = dropout + [0, -cs_spread, dropout_chainstay_z];
+    cs_right_dir = cs_right_end - cs_right_start;
+    cs_right_unit = cs_right_dir / norm(cs_right_dir);
+
+    cs_left_rot = vector_to_euler(cs_left_dir);
+    cs_right_rot = vector_to_euler(cs_right_dir);
 
     // Socket depths
     cs_socket_depth = tube_socket_depth(CHAINSTAY);
     cs_extension_depth = tube_extension_depth(CHAINSTAY);
-    cs_offset_dist = cs_extension_depth - cs_socket_depth;
-    cs_offset = cs_offset_dist * cs_unit;
+    cs_offset_dist = bb_shell_od / 2;
 
-    // Translation to position socket entrance at [0, ±cs_spread, bb_chainstay_z]
+    cs_left_offset = cs_offset_dist * cs_left_unit;
+    cs_right_offset = cs_offset_dist * cs_right_unit;
+
+    // Translation to position socket entrance at tube start
     // Collar extends forward from its base, so translate forward by offset along tube direction
-    cs_tube_end_left = [0, cs_spread, bb_chainstay_z];
-    cs_tube_end_right = [0, -cs_spread, bb_chainstay_z];
-    cs_left_translation = cs_tube_end_left + cs_offset;
-    cs_right_translation = cs_tube_end_right + cs_offset;
+    cs_left_translation = cs_left_start + cs_left_offset;
+    cs_right_translation = cs_right_start + cs_right_offset;
 
-    // Height = 0 since Y positioning is done via translation
-    cs_left_collar = Collar(CHAINSTAY, cs_rot, 0, cs_left_translation, cap = true);
-    cs_right_collar = Collar(CHAINSTAY, cs_rot, 0, cs_right_translation, cap = true);
+    // Height = 0 since all positioning is done via translation
+    // axis_rotation rotates socket bore outward for weather resistance
+    cs_left_collar = Collar(CHAINSTAY, cs_left_rot, 0, cs_left_translation, cap = true, axis_rotation = -90);
+    cs_right_collar = Collar(CHAINSTAY, cs_right_rot, 0, cs_right_translation, cap = true, axis_rotation = 90);
 
     difference() {
         union() {
