@@ -7,7 +7,7 @@ include <geometry.scad>
 $fn = fn_assembly;
 
 // Metal transparency for geometry verification (1.0 = opaque, 0.3 = transparent)
-alpha_metal = 1;
+alpha_metal = 0.3;
 
 // Debug colors for socket alignment visualization
 // Set to "invisible" to hide, or a color name to show debugging pins
@@ -57,10 +57,9 @@ module frame_assembly() {
     // --- HEAD TUBE LUG ---
     // Using repositioned lug with origin at downtube socket cap
     // Simply orient along downtube and position at downtube end
-    color(color_metal, alpha_metal)
-        orient_to(bb_down_tube, ht_down_tube)
-            translate([0, 0, down_tube_length])
-                head_tube_lug();
+    orient_to(bb_down_tube, ht_down_tube)
+        translate([0, 0, down_tube_length])
+            head_tube_lug(body_color = color_metal, alpha = alpha_metal, debug_color = debug_head_tube_lug);
 
     // --- TOP TUBE ---
     // Connects from head tube lug top extension socket to seat tube mid-junction

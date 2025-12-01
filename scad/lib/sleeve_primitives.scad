@@ -79,20 +79,31 @@ module sleeve_collar(collar, geometry = "both", debug_color = "invisible", body_
             rotate([0, 0, axis_rotation]) {  // Additional rotation around tube axis
             difference() {
                 if (geometry == "both" || geometry == "positive") {
-                    color(body_color, alpha) {
-                        union() {
-                            // Extension cylinder
-                            cylinder(r = outer_r + collar_thickness, h = extension_depth);
+                    union() {
+                        color(body_color, alpha) {
+                                // Extension cylinder
+                                cylinder(r = outer_r + collar_thickness, h = extension_depth);
 
-                            // Spherical boss on tap side
-                            translate([0, 0, extension_depth - socket_depth + socket_depth/2])
-                                rotate([0, 90, 0])
-                                    translate([0, 0, outer_r + collar_thickness])
-                                        sphere(r = boss_r);
+                                // Spherical boss on tap side
+                                translate([0, 0, extension_depth - socket_depth + socket_depth/2])
+                                    rotate([0, 90, 0])
+                                        translate([0, 0, outer_r + collar_thickness])
+                                            sphere(r = boss_r);
 
-                            if (cap) {
-                                sphere(r = outer_r + collar_thickness);
-                            }
+                                if (cap) {
+                                    sphere(r = outer_r + collar_thickness);
+                                }
+                        }
+                    
+                        // Debug cylinder at socket entrance
+                        if (debug_color != "invisible") {
+                            debug_cylinder_d = 5;
+                            debug_cylinder_length = 200;
+
+                            translate([0, 0, extension_depth - socket_depth])
+                                color(debug_color, 0.8)
+                                    rotate([90, 0, 0])
+                                        cylinder(h = debug_cylinder_length, d = debug_cylinder_d, center = true);
                         }
                     }
                 }
@@ -119,17 +130,6 @@ module sleeve_collar(collar, geometry = "both", debug_color = "invisible", body_
                                 cylinder(r = counterbore_r, h = counterbore_d + 50);
                         }
                 }
-            }
-
-            // Debug cylinder at socket entrance
-            if (debug_color != "invisible") {
-                debug_cylinder_d = 5;
-                debug_cylinder_length = 200;
-
-                translate([0, 0, extension_depth - socket_depth])
-                    color(debug_color, 0.8)
-                        rotate([90, 0, 0])
-                            cylinder(h = debug_cylinder_length, d = debug_cylinder_d, center = true);
             }
         }
 }

@@ -41,10 +41,8 @@ head_tube_length = 140;              // Physical length of head tube
 // Rear triangle parameters
 bb_drop = 77.5;                      // BB below rear axle line
 chainstay_to_reach_ratio = 1.23;    // Chainstay horizontal length as proportion of reach
-                                     // Typical: 1.2-1.3 for balanced handling
-
+                                    // Typical: 1.2-1.3 for balanced handling
 // Additional parameters
-tt_angle = 105;                      // Top tube angle with respect to head tube
 frame_size = 520;                    // Seat tube center-to-top (TODO: derive from standover)
 
 // =============================================================================
@@ -183,7 +181,8 @@ _ht_vec = ht_top - ht_bottom;
 ht_unit = _ht_vec / norm(_ht_vec);
 
 // Down tube lug position (50mm up head tube from bottom)
-down_tube_extension_translation = 50;
+down_tube_extension_translation = 40;
+top_extension_translation = 75 - down_tube_extension_translation;
 ht_target = ht_bottom + ht_unit * down_tube_extension_translation;
 
 // Dropout position (rear axle) - derived from reach proportion
@@ -386,37 +385,15 @@ bb = [0, 0, 0];  // BB center at origin
 
 // Lug dimensions
 lug_height = 100;
+lug_seat_height = 60;  // Height from bottom to seating step (100mm - 40mm clamping = 60mm)
 
 _dt_vec = bb_down_tube - ht_down_tube;
+// this puts the tube in the right place but places the socket backwards
+// _ht_dot_dt = _ht_vec * _dt_vec;
 _ht_dot_dt = _ht_vec[0]*_dt_vec[0] + _ht_vec[1]*_dt_vec[1] + _ht_vec[2]*_dt_vec[2];
 dt_angle = acos(_ht_dot_dt / (norm(_ht_vec) * norm(_dt_vec)));
 
 dt_unit = _dt_vec / norm(_dt_vec);
-
-// Top tube direction: rotate head tube direction by tt_angle around global Y-axis
-tt_unit = [
-    ht_unit[0] * cos(tt_angle) - ht_unit[2] * sin(tt_angle),
-    ht_unit[1],
-    ht_unit[0] * sin(tt_angle) + ht_unit[2] * cos(tt_angle)
-];
-
-// Head tube dimensions
-lug_outer_radius = head_tube_od / 2 + tube_collar_thickness(HEAD_TUBE);
-lug_collar_radius = lug_outer_radius;
-top_extension_outer_radius = top_tube_od / 2 + tube_collar_thickness(TOP_TUBE);
-socket_offset = lug_collar_radius - top_extension_outer_radius;
-alpha = 180 - tt_angle;
-x = lug_outer_radius;
-y = top_extension_outer_radius;
-top_extension_offset = sin(alpha)*y-(x-cos(alpha)*y)/tan(alpha);
-top_extension_translation = lug_height - top_extension_offset - down_tube_extension_translation;
-
-// Build up socket position step by step for debugging
-_tt_step1 = ht_down_tube;
-_tt_step2 = _tt_step1 - dt_unit * (tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE));
-_tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
-_tt_step4 = _tt_step3 + tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
-lug_tt_socket_position = _tt_step4;
 
 // Seat tube mid-junction socket position
 // Project from lug socket along tt_unit to seat tube centerline
@@ -424,22 +401,36 @@ lug_tt_socket_position = _tt_step4;
 _st_vec = st_top - bb_seat_tube;
 _st_unit = _st_vec / norm(_st_vec);
 
-// Find intersection: lug_tt_socket_position + t*tt_unit = bb_seat_tube + s*seat_tube_unit
-// This is a line-line closest approach problem in 3D
-_w0 = bb_seat_tube - lug_tt_socket_position;
-_a = _st_unit * _st_unit;  // = 1 (unit vector)
-_b = _st_unit * tt_unit;   // dot product
-_c = tt_unit * tt_unit;    // = 1 (unit vector)
-_d = _st_unit * _w0;       // dot product
-_e = tt_unit * _w0;        // dot product
-_t_intersection = (_b * _e - _c * _d) / (_a * _c - _b * _b);
+_t_intersection = seat_tube_length / 2;
 // Point on seat tube axis where top tube ray intersects
-_st_intersection_point = bb_seat_tube + _st_unit * _t_intersection;
-// Back up by extension offset along -tt_unit to place junction socket entrance
-seat_tube_mid_junction_position = _st_intersection_point - tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
+_stmj_tt_target = bb_seat_tube + _st_unit * _t_intersection;
+
+// Calculate tt_unit first from geometry (lug target to seat tube target)
+// Use approximate tt_unit for initial calculation
+_lug_tt_target = ht_bottom + ht_unit * (down_tube_extension_translation + top_extension_translation);
+_tt_vec = _stmj_tt_target - _lug_tt_target;
+_tt_unit = _tt_vec / norm(_tt_vec);
+
+_ht_dot_tt = _ht_vec[0]*_tt_vec[0] + _ht_vec[1]*_tt_vec[1] + _ht_vec[2]*_tt_vec[2];
+tt_angle = acos(_ht_dot_tt / (norm(_ht_vec) * norm(_tt_vec)));
+echo("tt_angle", tt_angle);
+
+// Build up lug socket position step by step (same as old code)
+_tt_step1 = ht_down_tube;
+_tt_step2 = _tt_step1 - dt_unit * (tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE));
+_tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
+_tt_step4 = _tt_step3 + _tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
+lug_tt_socket_position = _tt_step4;
+
+// Seat tube mid junction socket extends BACK toward lug (negative direction)
+stmj_tt_socket_position = _stmj_tt_target - _tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
+
+// Export tt_vec and tt_unit (already calculated above)
+tt_vec = _tt_vec;
+tt_unit = _tt_unit;
 
 // Top tube length from socket to socket
-top_tube_length = norm(seat_tube_mid_junction_position - lug_tt_socket_position);
+top_tube_length = norm(stmj_tt_socket_position - lug_tt_socket_position);
 
 // Seat tube mid-junction orientation angles
 // Socket should point toward lug (opposite of tt_unit)
@@ -449,7 +440,7 @@ stmj_socket_rotation_x = atan2(_tt_inv[1], sqrt(_tt_inv[0]*_tt_inv[0] + _tt_inv[
 
 // Export for assembly (after calculations)
 ht_top_tube = lug_tt_socket_position;  // Top tube socket position in lug
-st_top_tube = seat_tube_mid_junction_position;  // Seat tube mid-junction socket position
+st_top_tube = stmj_tt_socket_position;  // Seat tube mid-junction socket position
 
 // Seat tube mid-junction bolt positioning
 // The sleeve has two tapped bolts at tap_unit and tap_unit*2 from sleeve bottom
@@ -465,8 +456,6 @@ st_mid_junction_bolt1_distance = _st_sleeve_bottom_distance + stmj_tap_unit;
 st_mid_junction_bolt2_distance = _st_sleeve_bottom_distance + stmj_tap_unit * 2;
 
 // Debug exports for visualization
-tt_step1 = _tt_step1;
-tt_step2 = _tt_step2;
 tt_step3 = _tt_step3;
 tt_step4 = _tt_step4;
 
