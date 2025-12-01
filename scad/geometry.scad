@@ -12,7 +12,6 @@ include <lib/helpers.scad>
 // RIDER PARAMETERS
 // =============================================================================
 rider_height = 173;
-rider_weight = 55;
 
 // =============================================================================
 // WHEEL CONFIGURATION
@@ -30,8 +29,9 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 
 // Fit parameters (define rider position)
 reach = 375;                         // Horizontal BB to head tube top
-stack = 633;                         // Vertical BB to head tube top
-standover_height = 450;              // Clearance for step-through
+stack = 600;                         // Vertical BB to head tube top
+standover_height_ratio = 0.306;      // Step-through height as ratio of rider height (0.306 * 1730mm = 530mm)
+standover_height = rider_height * 10 * standover_height_ratio;  // Convert cm to mm and apply ratio
 
 // Tube angles (define frame shape)
 head_tube_angle = 70;                // Degrees from horizontal
@@ -42,8 +42,27 @@ head_tube_length = 140;              // Physical length of head tube
 bb_drop = 77.5;                      // BB below rear axle line
 chainstay_to_reach_ratio = 1.23;    // Chainstay horizontal length as proportion of reach
                                     // Typical: 1.2-1.3 for balanced handling
-// Additional parameters
-frame_size = 520;                    // Seat tube center-to-top (TODO: derive from standover)
+
+// Calculate BB height above ground
+// Ground is at wheel contact point, axle is at wheel_diameter/2 above ground
+// BB is bb_drop below the rear axle
+bb_height_above_ground = wheel_diameter / 2 - bb_drop;
+
+// Derive frame_size from standover_height
+// standover_height (above ground) = bb_height_above_ground + step_through_height_bb_relative
+// step_through_height_bb_relative = bb_seat_tube[2] + seat_tube_length/2 * sin(seat_tube_angle)
+// bb_seat_tube[2] = st_socket_distance * sin(180 - seat_tube_angle)
+_st_socket_distance = tube_extension_depth(SEAT_TUBE) - tube_socket_depth(SEAT_TUBE);
+_bb_seat_tube_z = _st_socket_distance * sin(180 - seat_tube_angle);
+
+// Solve for frame_size accounting for socket extensions:
+// The actual tube (socket to socket) sits between bb_seat_tube and st_top
+// st_top = bb_seat_tube + (frame_size - st_socket_distance) * _seat_tube_unit
+// The midpoint is at: bb_seat_tube + (frame_size - st_socket_distance)/2 * _seat_tube_unit
+// standover_height = bb_height_above_ground + midpoint_z
+// midpoint_z = _bb_seat_tube_z + (frame_size - st_socket_distance)/2 * sin(seat_tube_angle)
+// Solving for frame_size:
+frame_size = 2 * (standover_height - bb_height_above_ground - _bb_seat_tube_z) / sin(seat_tube_angle) + _st_socket_distance;
 
 // =============================================================================
 // TUBE DIAMETERS
@@ -241,11 +260,12 @@ cs_spread = 60;  // Chainstay spread for mid-drive motor clearance
 bb_chainstay_z = 0;  // Chainstay exits at BB centerline
 
 // --- SEAT TUBE TOP POSITION ---
-// Calculate based on standover requirement or frame size
-// Using frame_size for now (TODO: derive from standover)
-st_top_x = -frame_size * cos(seat_tube_angle);
-st_top_z = frame_size * sin(seat_tube_angle);
-st_top = [st_top_x, 0, st_top_z];
+// Calculate from bb_seat_tube socket position along seat tube direction
+// frame_size is nominal BB-to-top distance, but we measure from socket entrance
+// Seat tube unit vector (pointing from BB toward saddle)
+_seat_tube_unit = [-cos(seat_tube_angle), 0, sin(seat_tube_angle)];
+// Actual tube length = frame_size - socket offset at BB
+st_top = bb_seat_tube + (frame_size - st_socket_distance) * _seat_tube_unit;
 
 // --- DROPOUT POSITIONS ---
 dropout = [dropout_x, 0, dropout_z];
@@ -458,6 +478,16 @@ st_mid_junction_bolt2_distance = _st_sleeve_bottom_distance + stmj_tap_unit * 2;
 // Debug exports for visualization
 tt_step3 = _tt_step3;
 tt_step4 = _tt_step4;
+
+// Report step-through height at seat tube mid-junction
+step_through_height_bb_relative = _stmj_tt_target[2];
+step_through_height_ground = bb_height_above_ground + step_through_height_bb_relative;
+echo("BB height above ground:", bb_height_above_ground);
+echo("Step-through (BB-relative):", step_through_height_bb_relative);
+echo("Step-through (ground):", step_through_height_ground);
+echo("Target standover:", standover_height);
+echo("Frame size:", frame_size);
+echo("Seat tube length:", seat_tube_length);
 
 // =============================================================================
 // HELPER MODULE: Orient object from point A toward point B
