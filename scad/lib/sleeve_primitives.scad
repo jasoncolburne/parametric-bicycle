@@ -7,25 +7,37 @@ include <helpers.scad>
 
 // Creates a metal sleeve around a tube with options for collars
 // Combines base sleeve cylinder with multiple oriented collars
-module sleeve(tube_size, height, collars, debug_color = "invisible", body_color = "silver", alpha = 1.0) {
+module sleeve(tube_size, height, collars, debug_color = "invisible", body_color = "silver", alpha = 1.0, use_hull = false) {
     outer_r = tube_outer_radius(tube_size);
     thickness = tube_collar_thickness(tube_size);
     clearance = tube_socket_clearance(tube_size);
 
     difference() {
         union() {
-            // Base sleeve cylinder
-            color(body_color, alpha)
-                cylinder(r = outer_r + thickness, h = height);
+            if (use_hull) {
+                hull() {
+                    // Base sleeve cylinder
+                    color(body_color, alpha)
+                        cylinder(r = outer_r + thickness, h = height);
+
+                    // Allow injection of additional geometry (bosses, bolts)
+                    color(body_color, alpha)
+                        children();
+                }
+            } else {
+                    // Base sleeve cylinder
+                    color(body_color, alpha)
+                        cylinder(r = outer_r + thickness, h = height);
+
+                    // Allow injection of additional geometry (bosses, bolts)
+                    color(body_color, alpha)
+                        children();
+            }
 
             // Add all collars
             for (collar = collars) {
                 sleeve_collar(collar, geometry = "positive", debug_color = debug_color, body_color = body_color, alpha = alpha);
             }
-
-            // Allow injection of additional geometry (bosses, bolts)
-            color(body_color, alpha)
-                children();
         }
 
         // Add all collars
@@ -170,7 +182,7 @@ module transform_pinch_bolt(height, radius) {
 // Uses difference() to subtract pinch slot from base sleeve
 // upper_tube_size: bore size above the pinch slot (clamping section)
 // lower_tube_size: bore size below the pinch slot (structural section)
-module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth, collars, bolt_count, debug_color = "invisible", body_color = "silver", alpha = 1.0) {
+module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth, collars, bolt_count, debug_color = "invisible", body_color = "silver", alpha = 1.0, geometry = "both", use_hull = false) {
     outer_r = tube_outer_radius(lower_tube_size);
     thickness = tube_collar_thickness(lower_tube_size);
     separation = tube_pinch_separation(lower_tube_size);
@@ -185,32 +197,38 @@ module pinched_sleeve(upper_tube_size, lower_tube_size, height, pinch_slot_depth
     lower_bore_r = tube_outer_radius(lower_tube_size) + tube_socket_clearance(lower_tube_size);
 
     difference() {
-        union() {
-            // Base sleeve with pinch bolt as child
-            sleeve(lower_tube_size, height, collars, debug_color, body_color, alpha) {
-                for (i = [1:bolt_count]) {
-                    // Pinch bolt positioned at pinch slot
-                    transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
-                        sleeve_pinch_bolt(bolt_size, outer_r, separation, geometry = "positive");
-                }
-            }
+        if (geometry == "both" || geometry == "positive") {
+            union() {
+                // Base sleeve with pinch bolt as child
+                sleeve(lower_tube_size, height, collars, debug_color, body_color, alpha, use_hull) {
+                    for (i = [1:bolt_count]) {
+                        // Pinch bolt positioned at pinch slot
+                        transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
+                            sleeve_pinch_bolt(bolt_size, outer_r, separation, geometry = "positive");
+                    }
 
-            color(body_color, alpha)
-                translate([0, 0, split_height])
-                    cylinder(r = lower_bore_r, h = pinch_slot_depth);
+                    children();
+                }
+
+                color(body_color, alpha)
+                    translate([0, 0, split_height])
+                        cylinder(r = lower_bore_r, h = pinch_slot_depth);
+            }
         }
 
-        // Upper bore (above split) - typically smaller diameter for seating
-        translate([0, 0, split_height])
-            cylinder(r = upper_bore_r, h = pinch_slot_depth * 2);
+        if (geometry == "both" || geometry == "negative") {
+            // Upper bore (above split) - typically smaller diameter for seating
+            translate([0, 0, split_height])
+                cylinder(r = upper_bore_r, h = pinch_slot_depth * 2);
 
-        // Pinch slot (vertical cut through sleeve wall)
-        translate([-separation / 2, -(outer_r + thickness + 0.01), height - pinch_slot_depth])
-            cube([separation, outer_r + thickness + 0.01, pinch_slot_depth * 2]);
+            // Pinch slot (vertical cut through sleeve wall)
+            translate([-separation / 2, -(outer_r + thickness) * 2, height - pinch_slot_depth])
+                cube([separation, (outer_r + thickness) * 2, pinch_slot_depth * 2]);
 
-        for (i = [1:bolt_count]) {
-            transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
-                sleeve_pinch_bolt(bolt_size, outer_r, separation, geometry = "negative");
+            for (i = [1:bolt_count]) {
+                transform_pinch_bolt(height - pinch_slot_depth + bolt_unit * i, outer_r + thickness * 3 / 4)
+                    sleeve_pinch_bolt(bolt_size, outer_r, separation, geometry = "negative");
+            }
         }
     }
 }

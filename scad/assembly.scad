@@ -112,13 +112,6 @@ module frame_assembly() {
             dropout_junction(side, debug_color = debug_dropout_junction, body_color = color_metal, alpha = alpha_metal);
     }
 
-    // --- BB SHELL ---
-    // Centered at origin, oriented laterally (along Y axis)
-    color(color_metal, alpha_metal)
-        rotate([90, 0, 0])
-            translate([0, 0, -bb_shell_width/2])
-                bb_shell();
-
 //    // --- TT STEP DEBUG CYLINDERS ---
 //    debug_cylinder_diameter = 5;
 //    debug_cylinder_length = 200;

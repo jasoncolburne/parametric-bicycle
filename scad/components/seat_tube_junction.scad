@@ -46,15 +46,26 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
     counterbore_d = bolt_counterbore_depth(bolt_size);
     boss_r = bolt_boss_radius(bolt_size);
 
+    ss_outer_r = tube_outer_radius(SEATSTAY);
+    ss_thickness = tube_collar_thickness(SEATSTAY);
+
     difference() {
         union() {
-            pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, stj_height - st_seat_stay_collar_height, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha);
+            pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, stj_height - st_seat_stay_collar_height, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha, geometry = "positive", use_hull = true) {
+                translate([ss_spread, 0, st_seat_stay_collar_height])
+                    sphere(r = ss_outer_r + ss_thickness);
+
+                translate([-ss_spread, 0, st_seat_stay_collar_height])
+                    sphere(r = ss_outer_r + ss_thickness);
+            }
 
             // Boss for seat tube socket bolt
             color(body_color, alpha)
                 translate([outer_r + thickness, 0, seat_tube_bolt_height])
                     sphere(r = boss_r);
         }
+
+        pinched_sleeve(SEAT_POST, SEAT_TUBE, stj_height, stj_height - st_seat_stay_collar_height, [ss_left_collar, ss_right_collar], 1, debug_color, body_color, alpha, geometry = "negative");
 
         // Seat tube socket bolt holes
         translate([0, 0, seat_tube_bolt_height])
@@ -68,8 +79,8 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
                     cylinder(r = clearance_r, h = (outer_r + thickness) - (outer_r - 2));
 
                 // Counterbore for socket head
-                translate([0, 0, -(outer_r + thickness)])
-                    cylinder(r = counterbore_r, h = counterbore_d);
+                translate([0, 0, -(outer_r + thickness + 50)])
+                    cylinder(r = counterbore_r, h = counterbore_d + 50);
             }
     }
 }
