@@ -11,15 +11,15 @@ alpha_metal = 1;
 
 // Debug colors for socket alignment visualization
 // Set to "invisible" to hide, or a color name to show debugging pins
-debug_down_tube = "red";
-debug_top_tube = "green";
-debug_seat_tube = "blue";
-debug_chainstay = "yellow";
-debug_seatstay = "cyan";
-debug_bb_junction = "magenta";
-debug_head_tube_lug = "orange";
-debug_seat_tube_junction = "purple";
-debug_seat_tube_mid_junction = "white";
+debug_down_tube = "invisible";
+debug_top_tube = "invisible";
+debug_seat_tube = "invisible";
+debug_chainstay = "invisible";
+debug_seatstay = "invisible";
+debug_bb_junction = "invisible";
+debug_head_tube_lug = "invisible";
+debug_seat_tube_junction = "invisible";
+debug_seat_tube_mid_junction = "invisible";
 debug_dropout_junction = "invisible";
 
 // Import component modules
@@ -119,7 +119,7 @@ module frame_assembly() {
             translate([0, 0, -bb_shell_width/2])
                 bb_shell();
 
-//    // --- DEBUG CYLINDERS ---
+//    // --- TT STEP DEBUG CYLINDERS ---
 //    debug_cylinder_diameter = 5;
 //    debug_cylinder_length = 200;
 //
