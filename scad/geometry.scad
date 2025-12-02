@@ -42,6 +42,7 @@ head_tube_length = 140;              // Physical length of head tube
 bb_drop = 77.5;                      // BB below rear axle line
 chainstay_to_reach_ratio = 1.23;    // Chainstay horizontal length as proportion of reach
                                     // Typical: 1.2-1.3 for balanced handling
+bb_shell_od = 42;                    // BB shell outer diameter (needed for frame_size calculation)
 
 // Calculate BB height above ground
 // Ground is at wheel contact point, axle is at wheel_diameter/2 above ground
@@ -51,18 +52,19 @@ bb_height_above_ground = wheel_diameter / 2 - bb_drop;
 // Derive frame_size from standover_height
 // standover_height (above ground) = bb_height_above_ground + step_through_height_bb_relative
 // step_through_height_bb_relative = bb_seat_tube[2] + seat_tube_length/2 * sin(seat_tube_angle)
-// bb_seat_tube[2] = st_socket_distance * sin(180 - seat_tube_angle)
+// bb_seat_tube[2] = st_bb_offset * sin(180 - seat_tube_angle)
 _st_socket_distance = tube_extension_depth(SEAT_TUBE) - tube_socket_depth(SEAT_TUBE);
-_bb_seat_tube_z = _st_socket_distance * sin(180 - seat_tube_angle);
+_st_bb_offset = _st_socket_distance;
+_bb_seat_tube_z = _st_bb_offset * sin(180 - seat_tube_angle);
 
 // Solve for frame_size accounting for socket extensions:
 // The actual tube (socket to socket) sits between bb_seat_tube and st_top
-// st_top = bb_seat_tube + (frame_size - st_socket_distance) * _seat_tube_unit
-// The midpoint is at: bb_seat_tube + (frame_size - st_socket_distance)/2 * _seat_tube_unit
+// st_top = bb_seat_tube + (frame_size - st_bb_offset) * _seat_tube_unit
+// The midpoint is at: bb_seat_tube + (frame_size - st_bb_offset)/2 * _seat_tube_unit
 // standover_height = bb_height_above_ground + midpoint_z
-// midpoint_z = _bb_seat_tube_z + (frame_size - st_socket_distance)/2 * sin(seat_tube_angle)
+// midpoint_z = _bb_seat_tube_z + (frame_size - st_bb_offset)/2 * sin(seat_tube_angle)
 // Solving for frame_size:
-frame_size = 2 * (standover_height - bb_height_above_ground - _bb_seat_tube_z) / sin(seat_tube_angle) + _st_socket_distance;
+frame_size = 2 * (standover_height - bb_height_above_ground - _bb_seat_tube_z) / sin(seat_tube_angle) + _st_bb_offset;
 
 // =============================================================================
 // TUBE DIAMETERS
@@ -97,7 +99,7 @@ dropout_axle_diameter = 12;
 // =============================================================================
 // BOTTOM BRACKET SHELL
 // =============================================================================
-bb_shell_od = 42;
+// bb_shell_od defined earlier (needed for frame_size calculation)
 bb_shell_id = 34.8;                  // BSA threaded
 bb_thread_tpi = 24;                  // BSA 1.37" x 24 TPI
 bb_wall = 6;                         // Wall thickness around BB shell for junction
@@ -187,6 +189,14 @@ gusset_quantity = 2;
 // All positions calculated from reach, stack, angles, and chainstay length
 // BB is at origin [0, 0, 0]
 
+// --- COMMON SOCKET OFFSET CALCULATIONS ---
+// Calculate socket offsets for all tubes (extension_depth - socket_depth)
+dt_socket_distance = tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE);
+st_socket_distance = tube_extension_depth(SEAT_TUBE) - tube_socket_depth(SEAT_TUBE);
+tt_socket_distance = tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE);
+cs_socket_distance = tube_extension_depth(CHAINSTAY) - tube_socket_depth(CHAINSTAY);
+ss_socket_distance = tube_extension_depth(SEATSTAY) - tube_socket_depth(SEATSTAY);
+
 // --- PRIMARY JUNCTION POSITIONS ---
 
 // Head tube bottom (where down tube connects)
@@ -241,14 +251,12 @@ bb_st_collar_internal_rotation = [0, 0, -90];
 // --- BB JUNCTION SOCKET POSITIONS ---
 // Socket positions calculated from collar geometry
 // Socket is at extension_depth - socket_depth along the rotated collar axis
-dt_socket_distance = tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE);
 bb_down_tube = [
     dt_socket_distance * cos(down_tube_angle),
     0,
     dt_socket_distance * sin(down_tube_angle)
 ];
 
-st_socket_distance = tube_extension_depth(SEAT_TUBE) - tube_socket_depth(SEAT_TUBE);
 bb_seat_tube = [
     st_socket_distance * cos(180-seat_tube_angle),
     0,
@@ -259,13 +267,17 @@ bb_seat_tube = [
 cs_spread = 60;  // Chainstay spread for mid-drive motor clearance
 bb_chainstay_z = 0;  // Chainstay exits at BB centerline
 
-// --- SEAT TUBE TOP POSITION ---
-// Calculate from bb_seat_tube socket position along seat tube direction
-// frame_size is nominal BB-to-top distance, but we measure from socket entrance
+// --- SEAT TUBE VECTOR AND TOP POSITION ---
 // Seat tube unit vector (pointing from BB toward saddle)
-_seat_tube_unit = [-cos(seat_tube_angle), 0, sin(seat_tube_angle)];
-// Actual tube length = frame_size - socket offset at BB
-st_top = bb_seat_tube + (frame_size - st_socket_distance) * _seat_tube_unit;
+seat_tube_unit = [-cos(seat_tube_angle), 0, sin(seat_tube_angle)];
+// Calculate st_top from bb_seat_tube socket position along seat tube direction
+// frame_size is nominal BB-to-top distance, but we measure from socket entrance
+// Actual tube length = frame_size - socket offset at BB (including BB shell radius)
+st_top = bb_seat_tube + (frame_size - st_socket_distance) * seat_tube_unit;
+
+// Seat tube vector from actual geometry (should match seat_tube_unit exactly)
+st_vec = st_top - bb_seat_tube;
+st_unit = st_vec / norm(st_vec);
 
 // --- DROPOUT POSITIONS ---
 dropout = [dropout_x, 0, dropout_z];
@@ -279,17 +291,11 @@ st_seat_stay_collar_height = tube_socket_depth(SEAT_TUBE);  // Collar height bas
 // --- SEAT STAY POSITIONS ---
 ss_spread = 35;  // Seat stay spread (narrower than chainstay)
 
-// Calculate seat stay start positions accounting for seat tube angle
-st_vec = st_top - bb_seat_tube;
-st_unit = st_vec / norm(st_vec);  // Seat tube direction unit vector
 // Seat stays start such that their socket end inserts into the collar socket
-// Position the tube so socket entrance is at st_top (collar socket entrance)
-ss_socket_depth = tube_socket_depth(SEATSTAY);
-ss_extension_depth = tube_extension_depth(SEATSTAY);
-// Calculate direction from collar to dropout
-ss_dir_vec = dropout + [0, ss_spread, dropout_seat_stay_z] - st_top;
-ss_dir_unit = ss_dir_vec / norm(ss_dir_vec);
-st_seat_stay_base = st_top + (ss_extension_depth - ss_socket_depth) * ss_dir_unit;  // Move forward to socket entrance
+// Calculate direction from collar to dropout (without spread - spread is added per-stay)
+ss_vec = dropout + [0, 0, dropout_seat_stay_z] - st_top;
+ss_unit = ss_vec / norm(ss_vec);
+st_seat_stay_base = st_top + ss_socket_distance * ss_unit;  // Move forward to socket entrance
 
 // --- WHEELBASE ---
 wheelbase = ht_bottom_x - dropout_x;  // Horizontal distance between axles
@@ -297,8 +303,12 @@ wheelbase = ht_bottom_x - dropout_x;  // Horizontal distance between axles
 // --- TUBE LENGTHS ---
 // Calculate actual tube lengths including socket insertions
 
+// Calculate down tube direction from targets (before socket offsets)
+_dt_vec_target = bb_down_tube - ht_target;
+_dt_unit = _dt_vec_target / norm(_dt_vec_target);
+
 // Down tube socket position at head tube lug
-ht_down_tube = ht_target;
+ht_down_tube = ht_target + _dt_unit * dt_socket_distance;
 
 // Down tube length
 down_tube_length = norm(ht_down_tube - bb_down_tube);
@@ -310,8 +320,7 @@ seat_tube_length = norm(st_top - bb_seat_tube);
 cs_start = [0, cs_spread, bb_chainstay_z];
 cs_end = dropout + [0, cs_spread, dropout_chainstay_z];
 // Tube length is distance between points minus translation offsets at both ends
-cs_collar_offset = tube_extension_depth(CHAINSTAY) - tube_socket_depth(CHAINSTAY);
-cs_bb_offset = cs_collar_offset + bb_shell_od/2;  // BB end: collar offset + shell radius (matches assembly translation)
+cs_bb_offset = cs_socket_distance + bb_shell_od/2;  // BB end: collar offset + shell radius (matches assembly translation)
 chainstay_length = norm(cs_end - cs_start) - cs_bb_offset;
 
 // Seat stays: Seat tube junction collar position to dropout (with spread)
@@ -408,22 +417,15 @@ lug_height = 100;
 lug_seat_height = 60;  // Height from bottom to seating step (100mm - 40mm clamping = 60mm)
 
 _dt_vec = bb_down_tube - ht_down_tube;
-// this puts the tube in the right place but places the socket backwards
-// _ht_dot_dt = _ht_vec * _dt_vec;
-_ht_dot_dt = _ht_vec[0]*_dt_vec[0] + _ht_vec[1]*_dt_vec[1] + _ht_vec[2]*_dt_vec[2];
+_ht_dot_dt = _ht_vec * _dt_vec;  // Dot product
 dt_angle = acos(_ht_dot_dt / (norm(_ht_vec) * norm(_dt_vec)));
 
 dt_unit = _dt_vec / norm(_dt_vec);
 
 // Seat tube mid-junction socket position
-// Project from lug socket along tt_unit to seat tube centerline
-// Seat tube runs from bb_seat_tube to st_top
-_st_vec = st_top - bb_seat_tube;
-_st_unit = _st_vec / norm(_st_vec);
-
+// Point on seat tube axis where top tube ray intersects (midpoint)
 _t_intersection = seat_tube_length / 2;
-// Point on seat tube axis where top tube ray intersects
-_stmj_tt_target = bb_seat_tube + _st_unit * _t_intersection;
+_stmj_tt_target = bb_seat_tube + seat_tube_unit * _t_intersection;
 
 // Calculate tt_unit first from geometry (lug target to seat tube target)
 // Use approximate tt_unit for initial calculation
@@ -433,24 +435,18 @@ _tt_unit = _tt_vec / norm(_tt_vec);
 
 _ht_dot_tt = _ht_vec[0]*_tt_vec[0] + _ht_vec[1]*_tt_vec[1] + _ht_vec[2]*_tt_vec[2];
 tt_angle = acos(_ht_dot_tt / (norm(_ht_vec) * norm(_tt_vec)));
-echo("tt_angle", tt_angle);
 
-// Build up lug socket position step by step (same as old code)
-_tt_step1 = ht_down_tube;
-_tt_step2 = _tt_step1 - dt_unit * (tube_extension_depth(DOWN_TUBE) - tube_socket_depth(DOWN_TUBE));
-_tt_step3 = _tt_step2 + ht_unit * top_extension_translation;
-_tt_step4 = _tt_step3 + _tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
-lug_tt_socket_position = _tt_step4;
+// Lug top tube socket position on head tube at target height
+lug_tt_socket_position = _lug_tt_target;
 
 // Seat tube mid junction socket extends BACK toward lug (negative direction)
-stmj_tt_socket_position = _stmj_tt_target - _tt_unit * (tube_extension_depth(TOP_TUBE) - tube_socket_depth(TOP_TUBE));
+stmj_tt_socket_position = _stmj_tt_target - _tt_unit * tt_socket_distance;
 
-// Export tt_vec and tt_unit (already calculated above)
-tt_vec = _tt_vec;
-tt_unit = _tt_unit;
+// Recalculate tt_vec and tt_unit from actual socket positions (not targets)
+// This accounts for socket offsets and gives the true top tube direction
+tt_vec = stmj_tt_socket_position - lug_tt_socket_position;
+tt_unit = tt_vec / norm(tt_vec);
 
-// Top tube length from socket to socket
-top_tube_length = norm(stmj_tt_socket_position - lug_tt_socket_position);
 
 // Seat tube mid-junction orientation angles
 // Socket should point toward lug (opposite of tt_unit)
@@ -459,8 +455,11 @@ stmj_socket_rotation_y = atan2(_tt_inv[0], _tt_inv[2]);  // Rotation around Y ax
 stmj_socket_rotation_x = atan2(_tt_inv[1], sqrt(_tt_inv[0]*_tt_inv[0] + _tt_inv[2]*_tt_inv[2]));  // Rotation around X axis
 
 // Export for assembly (after calculations)
-ht_top_tube = lug_tt_socket_position;  // Top tube socket position in lug
+ht_top_tube = lug_tt_socket_position + tt_unit * tt_socket_distance;  // Top tube socket position in lug
 st_top_tube = stmj_tt_socket_position;  // Seat tube mid-junction socket position
+
+// Top tube length from socket to socket
+top_tube_length = norm(stmj_tt_socket_position - ht_top_tube);
 
 // Seat tube mid-junction bolt positioning
 // The sleeve has two tapped bolts at tap_unit and tap_unit*2 from sleeve bottom
@@ -475,19 +474,11 @@ _st_sleeve_bottom_distance = _t_intersection - stmj_height / 2;
 st_mid_junction_bolt1_distance = _st_sleeve_bottom_distance + stmj_tap_unit;
 st_mid_junction_bolt2_distance = _st_sleeve_bottom_distance + stmj_tap_unit * 2;
 
-// Debug exports for visualization
-tt_step3 = _tt_step3;
-tt_step4 = _tt_step4;
+// Debug exports for visualization (removed obsolete step-by-step variables)
 
 // Report step-through height at seat tube mid-junction
 step_through_height_bb_relative = _stmj_tt_target[2];
 step_through_height_ground = bb_height_above_ground + step_through_height_bb_relative;
-echo("BB height above ground:", bb_height_above_ground);
-echo("Step-through (BB-relative):", step_through_height_bb_relative);
-echo("Step-through (ground):", step_through_height_ground);
-echo("Target standover:", standover_height);
-echo("Frame size:", frame_size);
-echo("Seat tube length:", seat_tube_length);
 
 // =============================================================================
 // HELPER MODULE: Orient object from point A toward point B

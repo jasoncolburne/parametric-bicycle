@@ -29,10 +29,7 @@ module bb_junction(debug_color = "invisible", body_color = "silver", alpha = 1.0
     cs_right_rot = vector_to_euler(cs_right_dir);
 
     // Socket depths
-    cs_socket_depth = tube_socket_depth(CHAINSTAY);
-    cs_extension_depth = tube_extension_depth(CHAINSTAY);
     cs_offset_dist = bb_shell_od / 2;
-
     cs_left_offset = cs_offset_dist * cs_left_unit;
     cs_right_offset = cs_offset_dist * cs_right_unit;
 

@@ -84,8 +84,8 @@ module frame_assembly() {
 
     // --- SEAT TUBE MID-JUNCTION ---
     // Position at end of top tube, oriented along top tube direction
-    orient_to(ht_top_tube, st_top_tube)
-        translate([0, 0, top_tube_length])
+    orient_to(bb_seat_tube, st_top)
+        translate([0, 0, seat_tube_length / 2])
             seat_tube_mid_junction(debug_color = debug_seat_tube_mid_junction, body_color = color_metal, alpha = alpha_metal);
 
     // --- CHAINSTAYS ---
@@ -110,34 +110,6 @@ module frame_assembly() {
         translate(dropout + [0, side * cs_spread, 0])
             dropout_junction(side, debug_color = debug_dropout_junction, body_color = color_metal, alpha = alpha_metal);
     }
-
-//    // --- TT STEP DEBUG CYLINDERS ---
-//    debug_cylinder_diameter = 5;
-//    debug_cylinder_length = 200;
-//
-//    // Red: Step 1 - ht_down_tube (starting point)
-//    color("red", 0.8)
-//        translate(tt_step1)
-//            rotate([90, 0, 0])
-//                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
-//
-//    // Green: Step 2 - after moving along downtube direction
-//    color("green", 0.8)
-//        translate(tt_step2)
-//            rotate([90, 0, 0])
-//                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
-//
-//    // Blue: Step 3 - after moving up head tube direction
-//    color("blue", 0.8)
-//        translate(tt_step3)
-//            rotate([90, 0, 0])
-//                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
-//
-//    // Yellow: Step 4 - final socket position (after moving along top tube direction)
-//    color("yellow", 0.8)
-//        translate(tt_step4)
-//            rotate([90, 0, 0])
-//                cylinder(h = debug_cylinder_length, d = debug_cylinder_diameter, center = true);
 
     // NOTE: Additional components (dropouts, motor mount, brake mount,
     // cable guides, rack mounts) removed for geometry verification.

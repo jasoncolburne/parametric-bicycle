@@ -15,10 +15,10 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
 
     // Calculate seat stay directions - must match tube direction exactly
     // Tubes travel from st_seat_stay_base to dropout
-    ss_left_start = st_seat_stay_base + [-ss_spread, 0, 0];
-    ss_right_start = st_seat_stay_base + [ss_spread, 0, 0];
-    ss_left_end = dropout + [-ss_spread, 0, dropout_seat_stay_z];
-    ss_right_end = dropout + [ss_spread, 0, dropout_seat_stay_z];
+    ss_left_start = st_seat_stay_base + [0, -ss_spread, 0];
+    ss_right_start = st_seat_stay_base + [0, ss_spread, 0];
+    ss_left_end = dropout + [0, -ss_spread, dropout_seat_stay_z];
+    ss_right_end = dropout + [0, ss_spread, dropout_seat_stay_z];
 
     // Direction vectors must match tube direction
     ss_left_dir = ss_left_end - ss_left_start;
@@ -26,8 +26,8 @@ module seat_tube_junction_core(debug_color = "invisible", body_color = "silver",
 
     // Collar rotations to align with seat stay tubes
     // Adjust for junction's coordinate system (rotated 90° around Z)
-    ss_left_rot = vector_to_euler(ss_left_dir) + [0, 0, -90] - vector_to_euler(st_unit);
-    ss_right_rot = vector_to_euler(ss_right_dir) + [0, 0, -90] - vector_to_euler(st_unit);
+    ss_left_rot = vector_to_euler(ss_left_dir) + [0, 0, -90] - vector_to_euler(seat_tube_unit);
+    ss_right_rot = vector_to_euler(ss_right_dir) + [0, 0, -90] - vector_to_euler(seat_tube_unit);
 
     // Create seat stay collars
     ss_left_collar = Collar(SEATSTAY, ss_left_rot, st_seat_stay_collar_height, [-ss_spread, 0, 0], cap = true, axis_rotation = 90);
