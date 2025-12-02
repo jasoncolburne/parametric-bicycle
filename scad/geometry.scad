@@ -28,8 +28,8 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 // All other geometry is DERIVED from these values
 
 // Fit parameters (define rider position)
-reach = 375;                         // Horizontal BB to head tube top
-stack = 600;                         // Vertical BB to head tube top
+reach = 370;                         // Horizontal BB to head tube top
+stack = 633;                         // Vertical BB to head tube top
 standover_height_ratio = 0.306;      // Step-through height as ratio of rider height (0.306 * 1730mm = 530mm)
 standover_height = rider_height * 10 * standover_height_ratio;  // Convert cm to mm and apply ratio
 
