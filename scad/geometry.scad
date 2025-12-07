@@ -14,6 +14,12 @@ include <lib/helpers.scad>
 rider_height = 173;
 
 // =============================================================================
+// FIT PARAMETERS
+// =============================================================================
+reach = 370; // Horizontal BB to head tube top
+stack = 633; // Vertical BB to head tube top
+
+// =============================================================================
 // WHEEL CONFIGURATION
 // =============================================================================
 wheel_size = "27.5";             // 27.5" / 650b
@@ -27,9 +33,6 @@ wheel_diameter = wheel_bsd + 2 * wheel_tire_width;  // 684mm total diameter
 // These are the PRIMARY inputs that define the bike geometry
 // All other geometry is DERIVED from these values
 
-// Fit parameters (define rider position)
-reach = 370;                         // Horizontal BB to head tube top
-stack = 633;                         // Vertical BB to head tube top
 standover_height_ratio = 0.306;      // Step-through height as ratio of rider height (0.306 * 1730mm = 530mm)
 standover_height = rider_height * 10 * standover_height_ratio;  // Convert cm to mm and apply ratio
 
