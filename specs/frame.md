@@ -2,7 +2,7 @@
 
 ## Frame Geometry
 
-Optimized for rider: 173cm height, 55kg weight
+Optimized for rider: 173cm height
 Style: Commuter/Urban step-through (easy mount/dismount)
 
 ### Primary Dimensions

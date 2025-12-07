@@ -23,7 +23,6 @@ This repository contains OpenSCAD designs for a complete electric bicycle (ebike
 
 Initial design optimized for:
 - **Height**: 173 cm
-- **Weight**: 55 kg
 
 ## Wheel Configuration
 
